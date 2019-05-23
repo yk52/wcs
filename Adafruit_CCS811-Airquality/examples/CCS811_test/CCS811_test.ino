@@ -16,7 +16,7 @@
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
 
-#include "Adafruit_CCS811.h"
+#include "C:\Users\Yumi\Desktop\wcs\Adafruit_CCS811-Airquality\Adafruit_CCS811.h"
 
 Adafruit_CCS811 ccs;
 
