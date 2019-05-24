@@ -17,8 +17,5 @@ void setup() {
 }
 
 void loop() {
-  vib.on();
-  delay(200);
-  vib.off();
-  delay(200);
+  vib.rhythm(1000,500,5);
 }

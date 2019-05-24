@@ -8,8 +8,8 @@
 #endif
 
 #include <Wire.h>
+#include <time.h>
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
-#include "C:\Users\Yumi\Desktop\wcs\Scheduler\scheduler.h"
 
 
 
