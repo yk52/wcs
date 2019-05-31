@@ -66,9 +66,10 @@ void loop() {
     Serial.println("ERROR!");
     while(1);
   }
-  if (UV_LIMIT > 1400) {
+  if (CO2_LIMIT > 1400) {
     vib.on();
   }
   delay(1000);
   vib.off();
+  }
 }

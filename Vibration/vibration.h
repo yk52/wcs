@@ -1,5 +1,5 @@
-#ifndef VIBRATION_H
-#define VIBRATION_H
+#ifndef VIBRATION_H_
+#define VIBRATION_H_
 
 #if (ARDUINO >= 100)
  #include "Arduino.h"
@@ -25,8 +25,11 @@ class Vibration {
 		uint32_t schedule[10] = {0};
 
 		void init(void);
+		uint32_t getMillis(void);
+		uint32_t getTicks(void);
 		void on(void);
 		void off(void);
+		void toggle(void);
 		void check(void);
 		void rhythm(uint32_t duration, uint32_t pause, uint8_t repetitions);
 };
