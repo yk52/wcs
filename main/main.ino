@@ -5,6 +5,7 @@
 #include <Wire.h>
 #include <Adafruit_CCS811.h>
 #include <Adafruit_VEML6075.h>
+#include <ArduinoPedometer.h>
 #include <vibration.h>
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
