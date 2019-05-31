@@ -55,8 +55,9 @@ void loop() {
   if(ccs.available()){
   float temp = ccs.calculateTemperature();
   if(!ccs.readData()){
+    int co2 = ccs.geteCO2();
     Serial.print("CO2: ");
-    Serial.print(ccs.geteCO2());
+    Serial.print(co2);
     Serial.print("ppm, TVOC: ");
     Serial.print(ccs.getTVOC());
     Serial.print("ppb   Temp:");
@@ -66,7 +67,7 @@ void loop() {
     Serial.println("ERROR!");
     while(1);
   }
-  if (CO2_LIMIT > 1400) {
+  if (co2 > CO2_LIMIT) {
     vib.on();
   }
   delay(1000);
