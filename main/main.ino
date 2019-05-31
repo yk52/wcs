@@ -18,12 +18,19 @@ void setup() {
   Serial.begin(BAUDRATE);
   Serial.print("System has booted\n");
   vib.init();
-  vib.on();
 
-  // Set GPIO4 and GPIO16 as SDA and SCL respectively. for AQ
+  // Set GPIO4 and GPIO16 as SDA and SCL respectively.
   Wire.begin(4,16);
-  // 5 and 18 analog to above for UV
-  Wire.begin(5,18);
+
+  while (!Serial) { delay(10); }
+  Serial.println("VEML6075 Simple Test");
+
+  if (! uv.begin()) {
+    Serial.println("Failed to communicate with VEML6075 sensor, check wiring?");
+    while (1) { delay(100); }
+  }
+  Serial.println("Found VEML6075 sensor");
+
   
   if(!ccs.begin()){
     Serial.println("Failed to start sensor! Please check your wiring.");
@@ -43,8 +50,8 @@ void setup() {
 }
 
 void loop() {
-  Serial.print("UV Index reading: "); Serial.println(uv.readUVI());
   Serial.println("\n");
+  Serial.print("UV Index reading: "); Serial.println(uv.readUVI());
   if(ccs.available()){
   float temp = ccs.calculateTemperature();
   if(!ccs.readData()){
@@ -59,6 +66,9 @@ void loop() {
     Serial.println("ERROR!");
     while(1);
   }
+  if (UV_LIMIT > 1400) {
+    vib.on();
+  }
   delay(1000);
-  vib.toggle();
+  vib.off();
 }
