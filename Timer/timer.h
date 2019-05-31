@@ -1,5 +1,5 @@
-#ifndef TIMER_H
-#define TIMER_H
+#ifndef TIMER_H_
+#define TIMER_H_
 
 #if (ARDUINO >= 100)
  #include "Arduino.h"
@@ -7,19 +7,12 @@
  #include "WProgram.h"
 #endif
 
-#include <Wire.h>
 #include <time.h>
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
 
 uint32_t getMillis(void);
-
-void schedulerInit(RunMode_t);
-void schedulerCheck(void);
-uint32_t schedulerRegisterInterval(void * callback, uint32_t interval);
-uint32_t schedulerRegisterTimeout(void * callback, uint32_t timeout);
-_Bool schedulerUnregister(uint32_t uid);
-void schedulerUnregisterAll(void);
+uint32_t getTicks(void);
 
 
 

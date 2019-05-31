@@ -5,49 +5,46 @@
 #include <Wire.h>
 #include <Adafruit_CCS811.h>
 #include <Adafruit_VEML6075.h>
-#include <ArduinoPedometer.h>
+// #include <ArduinoPedometer.h>
 #include <vibration.h>
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
 Adafruit_CCS811 ccs;
 Adafruit_VEML6075 uv = Adafruit_VEML6075();
 Vibration vib;
-uint32_t ticks = 0;
+uint32_t millis = 0;
 
 void setup() {
   // initialize the serial communications:
   Serial.begin(BAUDRATE);
-  Serial.print("System has booted\n");
+  while (!Serial) { delay(10); }
+  Serial.println("Vitameter has booted.");
+
+  // Init I2C. Set GPIO4 and GPIO16 as SDA and SCL respectively.
+  Wire.begin(4,16);
+  
   vib.init();
 
-  // Set GPIO4 and GPIO16 as SDA and SCL respectively.
-  Wire.begin(4,16);
-
-  while (!Serial) { delay(10); }
-  Serial.println("VEML6075 Simple Test");
-
+  // UV init
   if (! uv.begin()) {
     Serial.println("Failed to communicate with VEML6075 sensor, check wiring?");
-    while (1) { delay(100); }
+    while(1) { delay(100); }
   }
   Serial.println("Found VEML6075 sensor");
 
-  
+
+  // Air Quality init
   if(!ccs.begin()){
-    Serial.println("Failed to start sensor! Please check your wiring.");
+    Serial.println("Failed to start Air Quality sensor! Please check your wiring.");
     while(1);
   }
-
-  //calibrate temperature sensor
+  Serial.println("Found CCS811 sensor");
+  
+  //calibrate temperature sensor on CCS811
   while(!ccs.available());
   float temp = ccs.calculateTemperature();
   ccs.setTempOffset(temp - 25.0);
 
-  if (! uv.begin()) {
-    Serial.println("Failed to communicate with VEML6075 sensor, check wiring?");
-    while (1) { delay(100); }
-  }
-  Serial.println("Found VEML6075 sensor");
 }
 
 void loop() {

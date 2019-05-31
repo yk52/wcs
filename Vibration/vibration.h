@@ -25,8 +25,6 @@ class Vibration {
 		uint32_t schedule[10] = {0};
 
 		void init(void);
-		uint32_t getMillis(void);
-		uint32_t getTicks(void);
 		void on(void);
 		void off(void);
 		void toggle(void);
