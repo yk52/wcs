@@ -17,3 +17,30 @@ uint32_t Timer::getTicks(void) {
 	clock_t currentTicks = clock();
 	return (uint32_t) currentTicks;
 }
+
+
+void Timer::check(void){
+	// Work off on/offSchedule
+	if (flag)
+	{
+		clock_t currentTicks = clock();
+
+		// If repetitions to make and planned Time arrived
+		if (repetitions > 0)
+		{
+			if (schedule[pos] < (uint32_t)currentTicks) {
+				if (pos % 2)
+				{
+					off();
+					repetitions--;
+				} else {
+					on();
+				}
+				pos++;
+			}
+		} else {
+			flag = false;
+			pos = 0;
+		}
+	}
+}

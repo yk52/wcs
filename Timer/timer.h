@@ -17,6 +17,7 @@ class Timer {
 		~Timer(void) {};
 		uint32_t getMillis(void);
 		uint32_t getTicks(void);
+		void check(void);
 
 };
 
