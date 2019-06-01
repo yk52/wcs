@@ -1,4 +1,4 @@
-#include "C:\Users\Yumi\Desktop\wcs\Vibration\timer.h"
+#include "C:\Users\Yumi\Desktop\wcs\Timer\Timer.h"
 
 /**************************************************************************/
 /*! 
@@ -7,13 +7,13 @@
 /**************************************************************************/
 
 
-uint32_t Vibration::getMillis(void) {
+uint32_t Timer::getMillis(void) {
 	clock_t currentTicks = clock();
 	uint32_t millis = currentTicks/CLOCKS_PER_SEC*1000;
 	return millis;
 }
 
-uint32_t Vibration::getTicks(void) {
+uint32_t Timer::getTicks(void) {
 	clock_t currentTicks = clock();
 	return (uint32_t) currentTicks;
 }

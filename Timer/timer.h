@@ -11,8 +11,14 @@
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
 
-uint32_t getMillis(void);
-uint32_t getTicks(void);
+class Timer {
+	public:
+		Timer(void) {};
+		~Timer(void) {};
+		uint32_t getMillis(void);
+		uint32_t getTicks(void);
+
+};
 
 
 
