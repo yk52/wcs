@@ -34,7 +34,7 @@ void setup() {
   // UV init
   if (! uv.begin()) {
     Serial.println("Failed to communicate with VEML6075 sensor, check wiring?");
-    while(1) { delay(100); }
+    while(1);
   }
   Serial.println("Found VEML6075 sensor");
 
