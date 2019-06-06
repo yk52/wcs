@@ -6,11 +6,12 @@
 */
 /**************************************************************************/
 
+bool flag = false;
 
 uint32_t Timer::getMillis(void) {
-	clock_t currentTicks = clock();
-	uint32_t millis = currentTicks/CLOCKS_PER_SEC*1000;
-	return millis;
+	float currentTicks = (float) clock();
+	float millis = currentTicks/CLOCKS_PER_SEC*1000;
+	return (uint32_t) millis;
 }
 
 uint32_t Timer::getTicks(void) {
@@ -18,12 +19,15 @@ uint32_t Timer::getTicks(void) {
 	return (uint32_t) currentTicks;
 }
 
+void Timer::add(void) {
+
+}
 
 void Timer::check(void){
 	// Work off on/offSchedule
-	if (flag)
+	/*if (flag)
 	{
-		clock_t currentTicks = clock();
+		uint32_t currentTicks = getTicks();
 
 		// If repetitions to make and planned Time arrived
 		if (repetitions > 0)
@@ -42,5 +46,5 @@ void Timer::check(void){
 			flag = false;
 			pos = 0;
 		}
-	}
+	}*/
 }

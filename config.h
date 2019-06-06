@@ -1,4 +1,5 @@
-// config data with all defines for pins and etc etc yada yada yaada
+#ifndef CONFIG_H_
+#define CONFIG_H_
 
 #define BAUDRATE			9600
 
@@ -18,3 +19,14 @@
 #define UV_FREQ				1000	// 1s test
 #define UVI_STORAGE_SIZE	5000
 
+
+// Pedometer
+#define X_PIN 32
+#define Y_PIN 34
+#define Z_PIN 35
+#define BUTTON_PIN 27
+#define PEDO_CALIBRATION_SAMPLE_SIZE 100
+#define PEDO_SAMPLE_SIZE 10
+
+
+#endif /* CONFIG_H_ */

@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include <Adafruit_CCS811.h>
 #include <Adafruit_VEML6075.h>
-#include <ArduinoPedometer.h>
+// #include <ArduinoPedometer.h>
 #include <InterfaceOut.h>
 #include <Timer.h>
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
@@ -15,6 +15,7 @@ Adafruit_VEML6075 uv = Adafruit_VEML6075();
 InterfaceOut vib(VIBRATION_PIN);
 InterfaceOut led(LEDRED_PIN);
 Timer timer;
+
 uint32_t ms = 0;
 uint32_t ticks = 0;
 uint16_t co2[CO2_STORAGE_SIZE];  // in ppm
@@ -62,8 +63,9 @@ void setup() {
 void loop() {
   ms = timer.getMillis();
   if (ms % PEDO_FREQ == 0) {
+    led.toggle();
     // get Pedo
-  } else if (ms % AQ_FREQ == 0 && ccs.available()) {
+  } else if (ms % AQ_FREQ >= 0 && ms % AQ_FREQ <= 1 && ccs.available()) {
     if (!ccs.readData()) {
       co2[co2_idx++] = ccs.geteCO2();
       voc[voc_idx++] = ccs.getTVOC();
@@ -74,5 +76,11 @@ void loop() {
     }
   } else if (ms % UV_FREQ == 0) {
     uvi[uvi_idx++] = uv.readUVI();
+  }
+  if (co2_idx % 10 == 0) {
+    for(int i = 0; i < co2_idx; i++)
+      {
+        Serial.println(co2[i]);
+      }
   }
 }

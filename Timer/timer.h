@@ -13,11 +13,17 @@
 
 class Timer {
 	public:
-		Timer(void) {};
+		Timer(void) {
+			uint32_t schedule[20] = {0};
+		};
 		~Timer(void) {};
 		uint32_t getMillis(void);
 		uint32_t getTicks(void);
 		void check(void);
+		void add(void);
+
+	private:
+		bool flag;
 
 };
 

@@ -38,71 +38,21 @@
   SoftwareSerial: https://github.com/arduino/Arduino/tree/master/hardware/arduino/avr/libraries/SoftwareSerial
 **********************************************************/
  
-#include <Adafruit_ADXL335.h>
-#include <Timer.h>
-#include <InterfaceOut.h>
+#include <ArduinoPedometer.h>
 
-ArduinoPedometer pedo; //create an instacne called "pedo" for the class "ArduinoPedometer"
+ArduinoPedometer fp; //create an instacne called "fp" for the class "ArduinoPedometer"
 int x;
-int z;
-Timer timer;
-int oldX = 0;
-bool calibrated = false;
-InterfaceOut led(LEDRED_PIN);
 
 void setup()
 {
-  Serial.begin(BAUDRATE);
-  pedo.setAverage(); // perform calibration to get x,y,z parameters.
-  Serial.println("Leave the pedometer on the table. Then press Button.");
-  while (digitalRead(BUTTON_PIN) == HIGH) {}
+  Serial.begin(9600);
+  fp.calibrate(); // perform calibration to get x,y,z parameters.
   delay(1000);
-  for (int n=0; n < 5; n++);
-  {
-    pedo.calibrate();
-  }
-  Serial.println("Turn towards y-Axis. Then press Button.");
-  while (digitalRead(BUTTON_PIN) == HIGH) {}
-  delay(1000);
-  for (int n=0; n < 5; n++);
-  {
-    pedo.calibrate();
-  }
-  Serial.println("Turn towards x-Axis. Then press Button.");
-  while (digitalRead(BUTTON_PIN) == HIGH) {}
-  delay(1000);
-  for (int n=0; n < 5; n++);
-  {
-    pedo.calibrate();
-  }
-  Serial.println("Calibration Successful!");
-  Serial.print("Raw Ranges: X: ");
-  Serial.print(pedo.xRawMin);
-  Serial.print("-");
-  Serial.print(pedo.xRawMax);
-  
-  Serial.print(", Y: ");
-  Serial.print(pedo.yRawMin);
-  Serial.print("-");
-  Serial.print(pedo.yRawMax);
-  
-  Serial.print(", Z: ");
-  Serial.print(pedo.zRawMin);
-  Serial.print("-");
-  Serial.print(pedo.zRawMax);
-  Serial.println();
 }
 
 void loop()
 {
-  if (digitalRead(BUTTON_PIN) == LOW)
-  {
-    pedo.calibrate();
-  }
-  x = pedo.getPedo(); //get the no. of steps
-  if (x != oldX) {
-    Serial.println(x);
-    oldX = x;
-  }
-  delay(20);
+  x = fp.getPedo(); //get the no. of steps
+  fp.jsonPrint(x); //print the value in json format in software serial.
+  delay(200);
 }
