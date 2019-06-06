@@ -8,7 +8,7 @@ Please refer lisence.txt for complete details.
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
 
-int ArduinoPedometer::getPedo()
+int Adafruit_ADXL335::getPedo()
 {
   int acc=0;
   float totvect[15]={0};
@@ -19,14 +19,10 @@ int ArduinoPedometer::getPedo()
   for (int i=0;i<15;i++)
   {
     xaccl[i]=float(analogRead(X_PIN));
-    delay(1);
     yaccl[i]=float(analogRead(Y_PIN));
-    delay(1);
     zaccl[i]=float(analogRead(Z_PIN));
-    delay(1);
     totvect[i] = sqrt(((xaccl[i]-xavg)* (xaccl[i]-xavg))+ ((yaccl[i] - yavg)*(yaccl[i] - yavg)) + ((zval[i] - zavg)*(zval[i] - zavg)));
     totave[i] = (totvect[i] + totvect[i-1]) / 2 ;
-    delay(150);
 
     //cal steps 
     if (totave[i]>threshhold && flag==0)
@@ -46,10 +42,9 @@ int ArduinoPedometer::getPedo()
    // Serial.println(steps);
    return(steps);
   }
-  delay(100);
 }
 
-int ArduinoPedometer::readAxis(int axisPin, int samples)
+int Adafruit_ADXL335::readAxis(int axisPin, int samples)
 {
   long reading = 0;
   analogRead(axisPin);
@@ -60,7 +55,7 @@ int ArduinoPedometer::readAxis(int axisPin, int samples)
   return reading/samples;
 }
 
-void ArduinoPedometer::setAverage()
+void Adafruit_ADXL335::setAverage()
 {
 	xavg = readAxis(X_PIN, PEDO_CALIBRATION_SAMPLE_SIZE);
 	yavg = readAxis(Y_PIN, PEDO_CALIBRATION_SAMPLE_SIZE);
@@ -71,7 +66,7 @@ void ArduinoPedometer::setAverage()
 	Serial.println("Averages have been taken.");
 }
 
-void ArduinoPedometer::calibrate()
+void Adafruit_ADXL335::calibrate()
 {
 	int xRaw = readAxis(X_PIN, PEDO_SAMPLE_SIZE);
 	int yRaw = readAxis(Y_PIN, PEDO_SAMPLE_SIZE);

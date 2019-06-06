@@ -15,11 +15,11 @@ Please refer lisence.txt for complete details.
 #endif
 
 
-class ArduinoPedometer
+class Adafruit_ADXL335
 {
 	public:
-		ArduinoPedometer() {};
-		~ArduinoPedometer() {};
+		Adafruit_ADXL335() {};
+		~Adafruit_ADXL335() {};
 
 		float xval[15] = {0};
 		float yval[15] = {0};

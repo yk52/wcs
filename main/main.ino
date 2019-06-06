@@ -5,19 +5,25 @@
 #include <Wire.h>
 #include <Adafruit_CCS811.h>
 #include <Adafruit_VEML6075.h>
-// #include <ArduinoPedometer.h>
+#include <Adafruit_ADXL335.h>
 #include <InterfaceOut.h>
 #include <Timer.h>
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
 Adafruit_CCS811 ccs;
 Adafruit_VEML6075 uv = Adafruit_VEML6075();
+Adafruit_ADXL335 pedo;
 InterfaceOut vib(VIBRATION_PIN);
 InterfaceOut led(LEDRED_PIN);
 Timer timer;
 
 uint32_t ms = 0;
-uint32_t ticks = 0;
+uint32_t pedoTimeout = 0;
+uint32_t uvTimeout = 0;
+uint32_t airTimeout = 0;
+
+int x = 0;
+int oldX = 0;
 uint16_t co2[CO2_STORAGE_SIZE];  // in ppm
 uint16_t co2_idx = 0;
 uint16_t voc[VOC_STORAGE_SIZE]; // in ppb
@@ -57,15 +63,63 @@ void setup() {
   while (!ccs.available());
   float temp = ccs.calculateTemperature();
   ccs.setTempOffset(temp - 25.0);
-  led.on();
+  
+  calibratePedo();
+  
+}
+
+void calibratePedo() {
+  pedo.setAverage(); // perform calibration to get x,y,z parameters.
+  Serial.println("Leave the pedometer on the table. Then press Button.");
+  while (digitalRead(BUTTON_PIN) == HIGH) {}
+  delay(1000);
+  for (int n=0; n < 5; n++);
+  {
+    pedo.calibrate();
+  }
+  Serial.println("Turn towards y-Axis. Then press Button.");
+  while (digitalRead(BUTTON_PIN) == HIGH) {}
+  delay(1000);
+  for (int n=0; n < 5; n++);
+  {
+    pedo.calibrate();
+  }
+  Serial.println("Turn towards x-Axis. Then press Button.");
+  while (digitalRead(BUTTON_PIN) == HIGH) {}
+  delay(1000);
+  for (int n=0; n < 5; n++);
+  {
+    pedo.calibrate();
+  }
+  Serial.println("Calibration Successful!");
+  Serial.print("Raw Ranges: X: ");
+  Serial.print(pedo.xRawMin);
+  Serial.print("-");
+  Serial.print(pedo.xRawMax);
+  
+  Serial.print(", Y: ");
+  Serial.print(pedo.yRawMin);
+  Serial.print("-");
+  Serial.print(pedo.yRawMax);
+  
+  Serial.print(", Z: ");
+  Serial.print(pedo.zRawMin);
+  Serial.print("-");
+  Serial.print(pedo.zRawMax);
+  Serial.println();
 }
 
 void loop() {
   ms = timer.getMillis();
-  if (ms % PEDO_FREQ == 0) {
-    led.toggle();
-    // get Pedo
-  } else if (ms % AQ_FREQ >= 0 && ms % AQ_FREQ <= 1 && ccs.available()) {
+  if (ms > pedoTimeout) {
+    x = pedo.getPedo(); //get the no. of steps
+    if (x != oldX) {
+      Serial.println(x);
+      oldX = x;
+      pedoTimeout += PEDO_FREQ;
+    }
+  }
+  if (ms > airTimeout && ccs.available()) {
     if (!ccs.readData()) {
       co2[co2_idx++] = ccs.geteCO2();
       voc[voc_idx++] = ccs.getTVOC();
@@ -74,13 +128,9 @@ void loop() {
       Serial.println("ERROR!");
       while (1);
     }
-  } else if (ms % UV_FREQ == 0) {
-    uvi[uvi_idx++] = uv.readUVI();
+    airTimeout += AQ_FREQ;
   }
-  if (co2_idx % 10 == 0) {
-    for(int i = 0; i < co2_idx; i++)
-      {
-        Serial.println(co2[i]);
-      }
+  if (ms > uvTimeout) {
+    uvi[uvi_idx++] = uv.readUVI();
   }
 }

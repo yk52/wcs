@@ -10,8 +10,7 @@
 #define CO2_LIMIT			1400
 
 // Poll Measurements every X ms
-#define PEDO_FREQ			1000		// 50 Hz
-#define PEDO_STORAGE_SIZE	5000
+#define PEDO_FREQ			20		// 50 Hz
 #define AQ_FREQ				1000	// 1s test
 #define CO2_STORAGE_SIZE	5000
 #define VOC_STORAGE_SIZE	5000
