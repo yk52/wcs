@@ -3,6 +3,7 @@
 */
 
 #include <Wire.h>
+#include <BluetoothSerial.h>
 #include <Adafruit_CCS811.h>
 #include <Adafruit_VEML6075.h>
 #include <Adafruit_ADXL335.h>
@@ -13,6 +14,7 @@
 Adafruit_CCS811 ccs;
 Adafruit_VEML6075 uv = Adafruit_VEML6075();
 Adafruit_ADXL335 pedo;
+BluetoothSerial SerialBT;
 InterfaceOut vib(VIBRATION_PIN);
 InterfaceOut led(LEDRED_PIN);
 Timer timer;
@@ -21,6 +23,8 @@ uint32_t ms = 0;
 uint32_t pedoTimeout = 0;
 uint32_t uvTimeout = 0;
 uint32_t airTimeout = 0;
+
+uint32_t showTimeout = 0;
 
 int x = 0;
 int oldX = 0;
@@ -35,6 +39,7 @@ uint16_t temp_idx = 0;
 
 void setup() {
   // initialize the serial communications:
+  SerialBT.begin("Vitameter");
   Serial.begin(BAUDRATE);
   while (!Serial) {
     delay(10);
@@ -44,12 +49,14 @@ void setup() {
   // Init I2C. Set GPIO4 and GPIO16 as SDA and SCL respectively.
   Wire.begin(4, 16);
 
-  // UV init
+  // UV 
+/*
   if (! uv.begin()) {
     Serial.println("Failed to communicate with VEML6075 UV sensor! Please check your wiring.");
     while (1);
   }
   Serial.println("Found VEML6075 (UV) sensor");
+  */
 
 
   // Air Quality init
@@ -64,7 +71,7 @@ void setup() {
   float temp = ccs.calculateTemperature();
   ccs.setTempOffset(temp - 25.0);
   
-  calibratePedo();
+ // calibratePedo();
   
 }
 
@@ -109,8 +116,12 @@ void calibratePedo() {
   Serial.println();
 }
 
+// TODO Bluetooth
+// SerialBT.println("blabla")
+
 void loop() {
   ms = timer.getMillis();
+  /*
   if (ms > pedoTimeout) {
     x = pedo.getPedo(); //get the no. of steps
     if (x != oldX) {
@@ -119,6 +130,7 @@ void loop() {
       pedoTimeout += PEDO_FREQ;
     }
   }
+  */
   if (ms > airTimeout && ccs.available()) {
     if (!ccs.readData()) {
       co2[co2_idx++] = ccs.geteCO2();
@@ -132,5 +144,17 @@ void loop() {
   }
   if (ms > uvTimeout) {
     uvi[uvi_idx++] = uv.readUVI();
+  }
+  if (ms > showTimeout) {
+    showTimeout += 1000;
+    Serial.println(co2_idx);
+    Serial.print("AQ: ");
+    Serial.println(co2[co2_idx]);
+    Serial.print("UV: ");
+    Serial.println(uvi[uvi_idx]);
+    Serial.print("Steps: ");
+    Serial.println(x);
+    Serial.println();
+
   }
 }
