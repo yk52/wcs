@@ -23,6 +23,7 @@ uint32_t ms = 0;
 uint32_t pedoTimeout = 0;
 uint32_t uvTimeout = 0;
 uint32_t airTimeout = 0;
+int c = 0;
 
 uint32_t showTimeout = 0;
 
@@ -47,16 +48,16 @@ void setup() {
   Serial.println("Vitameter has booted.");
 
   // Init I2C. Set GPIO4 and GPIO16 as SDA and SCL respectively.
-  Wire.begin(4, 16);
+  Wire.begin(SDA_PIN, SCL_PIN);
 
   // UV 
-/*
-  if (! uv.begin()) {
+
+  if (!uv.begin()) {
     Serial.println("Failed to communicate with VEML6075 UV sensor! Please check your wiring.");
     while (1);
   }
   Serial.println("Found VEML6075 (UV) sensor");
-  */
+
 
 
   // Air Quality init
@@ -71,57 +72,38 @@ void setup() {
   float temp = ccs.calculateTemperature();
   ccs.setTempOffset(temp - 25.0);
   
- // calibratePedo();
+  pedo.setAverage();
   
 }
 
-void calibratePedo() {
-  pedo.setAverage(); // perform calibration to get x,y,z parameters.
-  Serial.println("Leave the pedometer on the table. Then press Button.");
-  while (digitalRead(BUTTON_PIN) == HIGH) {}
-  delay(1000);
-  for (int n=0; n < 5; n++);
-  {
-    pedo.calibrate();
-  }
-  Serial.println("Turn towards y-Axis. Then press Button.");
-  while (digitalRead(BUTTON_PIN) == HIGH) {}
-  delay(1000);
-  for (int n=0; n < 5; n++);
-  {
-    pedo.calibrate();
-  }
-  Serial.println("Turn towards x-Axis. Then press Button.");
-  while (digitalRead(BUTTON_PIN) == HIGH) {}
-  delay(1000);
-  for (int n=0; n < 5; n++);
-  {
-    pedo.calibrate();
-  }
-  Serial.println("Calibration Successful!");
-  Serial.print("Raw Ranges: X: ");
-  Serial.print(pedo.xRawMin);
-  Serial.print("-");
-  Serial.print(pedo.xRawMax);
-  
-  Serial.print(", Y: ");
-  Serial.print(pedo.yRawMin);
-  Serial.print("-");
-  Serial.print(pedo.yRawMax);
-  
-  Serial.print(", Z: ");
-  Serial.print(pedo.zRawMin);
-  Serial.print("-");
-  Serial.print(pedo.zRawMax);
-  Serial.println();
-}
 
 // TODO Bluetooth
 // SerialBT.println("blabla")
 
+
+void loop() {
+  Serial.println("\n");
+  Serial.print("UV Index reading: "); Serial.println(uv.readUVI());
+  if(ccs.available()){
+    float temp = ccs.calculateTemperature();
+    if(!ccs.readData()){
+      int co2 = ccs.geteCO2();
+      Serial.print("CO2: ");
+      Serial.print(co2);
+      Serial.print("ppm, TVOC: ");
+      Serial.print(ccs.getTVOC());
+      Serial.print("ppb   Temp:");
+      Serial.println(temp);
+    }
+  }
+  delay(1000);
+}
+
+
+/*
 void loop() {
   ms = timer.getMillis();
-  /*
+
   if (ms > pedoTimeout) {
     x = pedo.getPedo(); //get the no. of steps
     if (x != oldX) {
@@ -130,7 +112,8 @@ void loop() {
       pedoTimeout += PEDO_FREQ;
     }
   }
-  */
+
+
   if (ms > airTimeout && ccs.available()) {
     if (!ccs.readData()) {
       co2[co2_idx++] = ccs.geteCO2();
@@ -145,16 +128,23 @@ void loop() {
   if (ms > uvTimeout) {
     uvi[uvi_idx++] = uv.readUVI();
   }
+  
   if (ms > showTimeout) {
     showTimeout += 1000;
-    Serial.println(co2_idx);
-    Serial.print("AQ: ");
-    Serial.println(co2[co2_idx]);
-    Serial.print("UV: ");
-    Serial.println(uvi[uvi_idx]);
-    Serial.print("Steps: ");
-    Serial.println(x);
-    Serial.println();
-
+    Serial.println(showTimeout);
+    if (!ccs.readData()) {
+        // c = ccs.geteCO2();
+        c = ccs.getTVOC();
+        // c = ccs.calculateTemperature();
+      }
+      Serial.print("AQ: ");
+      Serial.println(c);
+      Serial.print("UV: ");
+      Serial.println(uv.readUVI());
+      Serial.print("Steps: ");
+      int x = pedo.getPedo();
+      Serial.println(x);
+      Serial.println();
   }
+}*/
 }

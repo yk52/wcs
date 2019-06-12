@@ -7,6 +7,9 @@
 #define	VIBRATION_PIN		19
 #define LEDRED_PIN			15
 
+#define SDA_PIN				4
+#define SCL_PIN				16
+
 #define CO2_LIMIT			1400
 
 // Pedometer
