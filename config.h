@@ -18,9 +18,10 @@
 #define Y_PIN 				34
 #define Z_PIN 				35
 #define BUTTON_PIN			27
-#define PEDO_CALIBRATION_SAMPLE_SIZE 50
+#define PEDO_CALIBRATION_SAMPLE_SIZE 20
 #define PEDO_SAMPLE_SIZE 		15
 #define ACCL				90000
+#define WAIT_AFTER_STEP		300
 
 // Airquality
 #define AQ_FREQ				1000	// 1s test

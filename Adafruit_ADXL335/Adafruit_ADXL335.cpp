@@ -32,7 +32,7 @@ int Adafruit_ADXL335::getPedo()
     {
        steps=steps+1;
        flag=1;
-       Serial.println((diff[idx] - diff[prev]));
+       // Serial.println((diff[idx] - diff[prev]));
     }
 
     oldVector = totalVector;
