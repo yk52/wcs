@@ -51,14 +51,11 @@ void setup() {
   Wire.begin(SDA_PIN, SCL_PIN);
 
   // UV 
-
   if (!uv.begin()) {
     Serial.println("Failed to communicate with VEML6075 UV sensor! Please check your wiring.");
     while (1);
   }
   Serial.println("Found VEML6075 (UV) sensor");
-
-
 
   // Air Quality init
   if (!ccs.begin()) {
@@ -66,13 +63,12 @@ void setup() {
     while (1);
   }
   Serial.println("Found CCS811 (Air Quality) sensor");
-
   //calibrate temperature sensor on CCS811
   while (!ccs.available());
   float temp = ccs.calculateTemperature();
   ccs.setTempOffset(temp - 25.0);
   
-  pedo.setAverage();
+  pedo.calibrate();
   
 }
 
@@ -81,9 +77,31 @@ void setup() {
 // SerialBT.println("blabla")
 
 
+
 void loop() {
-  Serial.println("\n");
-  Serial.print("UV Index reading: "); Serial.println(uv.readUVI());
+  ms = timer.getMillis();
+
+  if (ms > pedoTimeout) {
+    x = pedo.getPedo(); //get the no. of steps
+    if (pedo.flag) {
+      Serial.println(x);
+      pedoTimeout += 500;
+      pedo.flag = 0;
+    }
+    else {
+      pedoTimeout += PEDO_FREQ;
+    }
+  }
+/*
+  if (ms > showTimeout) {
+    Serial.println(analogRead(X_PIN));
+    Serial.println(analogRead(Y_PIN));
+    Serial.println(analogRead(Z_PIN));
+    Serial.println();
+    showTimeout += 1000;
+  }
+*/
+/*
   if(ccs.available()){
     float temp = ccs.calculateTemperature();
     if(!ccs.readData()){
@@ -96,23 +114,6 @@ void loop() {
       Serial.println(temp);
     }
   }
-  delay(1000);
-}
-
-
-/*
-void loop() {
-  ms = timer.getMillis();
-
-  if (ms > pedoTimeout) {
-    x = pedo.getPedo(); //get the no. of steps
-    if (x != oldX) {
-      Serial.println(x);
-      oldX = x;
-      pedoTimeout += PEDO_FREQ;
-    }
-  }
-
 
   if (ms > airTimeout && ccs.available()) {
     if (!ccs.readData()) {
@@ -145,6 +146,5 @@ void loop() {
       int x = pedo.getPedo();
       Serial.println(x);
       Serial.println();
-  }
-}*/
+  }*/
 }

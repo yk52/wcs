@@ -13,13 +13,14 @@
 #define CO2_LIMIT			1400
 
 // Pedometer
-#define PEDO_FREQ			20		// 50 Hz
-#define X_PIN 32
-#define Y_PIN 34
-#define Z_PIN 35
-#define BUTTON_PIN 27
-#define PEDO_CALIBRATION_SAMPLE_SIZE 100
-#define PEDO_SAMPLE_SIZE 10
+#define PEDO_FREQ			50		// 20 Hz
+#define X_PIN 				32
+#define Y_PIN 				34
+#define Z_PIN 				35
+#define BUTTON_PIN			27
+#define PEDO_CALIBRATION_SAMPLE_SIZE 50
+#define PEDO_SAMPLE_SIZE 		15
+#define ACCL				90000
 
 // Airquality
 #define AQ_FREQ				1000	// 1s test

@@ -21,31 +21,17 @@ class Adafruit_ADXL335
 		Adafruit_ADXL335() {};
 		~Adafruit_ADXL335() {};
 
-		float xval[15] = {0};
-		float yval[15] = {0};
-		float zval[15] = {0};
-
 		float xavg;
 		float yavg;
 		float zavg;
 
-		// Raw Ranges:
-		// initialize to mid-range and allow calibration to
-		// find the minimum and maximum for each axis
-		int xRawMin = 512;
-		int xRawMax = 512;
-
-		int yRawMin = 512;
-		int yRawMax = 512;
-
-		int zRawMin = 512;
-		int zRawMax = 512;
-
-		int steps,flag=0;
-		float threshhold=80.0;
+		int steps,flag = 0;
+		float threshold=5000.0;
+		float oldVector = 0;
+		float diff[15]={0};
+		int idx = 0;
 		int getPedo();
 		int readAxis(int, int);
-		void setAverage();
 		void calibrate();
 		
 	private:

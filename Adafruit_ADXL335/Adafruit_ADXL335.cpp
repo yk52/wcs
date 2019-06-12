@@ -10,38 +10,40 @@ Please refer lisence.txt for complete details.
 
 int Adafruit_ADXL335::getPedo()
 {
-  int acc=0;
-  float totvect[15]={0};
-  float totave[15]={0};
-  float xaccl[15]={0};
-  float yaccl[15]={0};
-  float zaccl[15]={0};
-  for (int i=0;i<15;i++)
-  {
-    xaccl[i]=float(analogRead(X_PIN));
-    yaccl[i]=float(analogRead(Y_PIN));
-    zaccl[i]=float(analogRead(Z_PIN));
-    totvect[i] = sqrt(((xaccl[i]-xavg)* (xaccl[i]-xavg))+ ((yaccl[i] - yavg)*(yaccl[i] - yavg)) + ((zval[i] - zavg)*(zval[i] - zavg)));
-    totave[i] = (totvect[i] + totvect[i-1]) / 2 ;
+	float xaccl = readAxis(X_PIN, PEDO_SAMPLE_SIZE);
+	float yaccl = readAxis(Y_PIN, PEDO_SAMPLE_SIZE);
+	float zaccl = readAxis(Z_PIN, PEDO_SAMPLE_SIZE);
+
+	int prev = 0;
+
+	float totalVector =  ((xaccl - xavg)* (xaccl - xavg))+ ((yaccl - yavg)*(yaccl - yavg)) + ((zaccl - zavg)*(zaccl - zavg));
+	diff[idx] = oldVector - totalVector;
+
+	if (idx == 0) {
+		prev = 14;
+	}
+	else
+	{
+		prev = idx - 1;
+	}
 
     //cal steps 
-    if (totave[i]>threshhold && flag==0)
+    if ((diff[idx] - diff[prev]) >threshold)
     {
        steps=steps+1;
        flag=1;
+       Serial.println((diff[idx] - diff[prev]));
     }
-    else if (totave[i] > threshhold && flag==1)
-    {
-        //do nothing 
+
+    oldVector = totalVector;
+    if (idx == 14) {
+    	idx = 0;
     }
-    if (totave[i] <threshhold  && flag==1)
-    {
-      flag=0;
+    else {
+    	idx++;
     }
-   // Serial.print("steps=");
-   // Serial.println(steps);
-   return(steps);
-  }
+    return(steps);
+
 }
 
 int Adafruit_ADXL335::readAxis(int axisPin, int samples)
@@ -55,49 +57,36 @@ int Adafruit_ADXL335::readAxis(int axisPin, int samples)
   return reading/samples;
 }
 
-void Adafruit_ADXL335::setAverage()
+void Adafruit_ADXL335::calibrate()
 {
 	xavg = readAxis(X_PIN, PEDO_CALIBRATION_SAMPLE_SIZE);
 	yavg = readAxis(Y_PIN, PEDO_CALIBRATION_SAMPLE_SIZE);
 	zavg = readAxis(Z_PIN, PEDO_CALIBRATION_SAMPLE_SIZE);
+
+	float totalVector = 0;
+	float xaccl = 0;
+	float yaccl = 0;
+	float zaccl = 0;
+
+	for (int i=0;i<PEDO_CALIBRATION_SAMPLE_SIZE;i++)
+	{
+		xaccl += float(analogRead(X_PIN));
+		yaccl += float(analogRead(Y_PIN));
+		zaccl += float(analogRead(Z_PIN));
+
+	}
+	xaccl /= PEDO_CALIBRATION_SAMPLE_SIZE;
+	yaccl /= PEDO_CALIBRATION_SAMPLE_SIZE;
+	zaccl /= PEDO_CALIBRATION_SAMPLE_SIZE;
+
+	totalVector =  ((xaccl - xavg)* (xaccl - xavg))+ ((yaccl - yavg)*(yaccl - yavg)) + ((zaccl - zavg)*(zaccl - zavg));
+	oldVector = totalVector;
+	threshold = ACCL;
+
 	Serial.print("X Average: "); Serial.println(xavg);
 	Serial.print("Y Average: "); Serial.println(yavg);
 	Serial.print("Z Average: "); Serial.println(zavg);
 	Serial.println("Averages have been taken.");
-}
-
-void Adafruit_ADXL335::calibrate()
-{
-	int xRaw = readAxis(X_PIN, PEDO_SAMPLE_SIZE);
-	int yRaw = readAxis(Y_PIN, PEDO_SAMPLE_SIZE);
-	int zRaw = readAxis(Z_PIN, PEDO_SAMPLE_SIZE);
-
-	if (xRaw < xRawMin)
-	{
-	xRawMin = xRaw;
-	}
-	if (xRaw > xRawMax)
-	{
-	xRawMax = xRaw;
-	}
-
-	if (yRaw < yRawMin)
-	{
-	yRawMin = yRaw;
-	}
-	if (yRaw > yRawMax)
-	{
-	yRawMax = yRaw;
-	}
-
-	if (zRaw < zRawMin)
-	{
-	zRawMin = zRaw;
-	}
-	if (zRaw > zRawMax)
-	{
-	zRawMax = zRaw;
-	}
-
+	Serial.print("Threshold: "); Serial.println(threshold);
 }
 
