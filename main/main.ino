@@ -20,17 +20,15 @@ InterfaceOut led(LEDRED_PIN);
 Timer timer;
 
 bool error = 0;
+bool valueWarning = 0;
 
 uint32_t ms = 0;
 uint32_t pedoTimeout = 0;
 uint32_t uvTimeout = 0;
 uint32_t airTimeout = 0;
-int c = 0;
-
 uint32_t showTimeout = 0;
 
 int x = 0;
-int oldX = 0;
 uint16_t co2[CO2_STORAGE_SIZE];  // in ppm
 uint16_t co2_idx = 0;
 uint16_t voc[VOC_STORAGE_SIZE]; // in ppb
@@ -80,6 +78,9 @@ void loop() {
       led.on();
       while(1);
   }
+  if (valueWarning) {
+    valueWarning = 0;
+  }
 
   ms = timer.getMillis();
 
@@ -97,16 +98,31 @@ void loop() {
 
   if ((ms > airTimeout) && ccs.available()) {
     if (!ccs.readData()) {
-      co2[co2_idx++] = ccs.geteCO2();
-      voc[voc_idx++] = ccs.getTVOC();
+      uint16_t c = ccs.geteCO2();
+      uint16_t v = ccs.getTVOC();
+      co2[co2_idx++] = c;
+      voc[voc_idx++] = v;
       temp[temp_idx++] = ccs.calculateTemperature();
+
+      if ((c >= CO2_LIMIT) || v >= VOC_LIMIT) {
+        valueWarning = 1;
+      }
+      
     } else {
       error = 1;
     }
     airTimeout += AQ_FREQ;
   }
   if (ms > uvTimeout) {
-    uvi[uvi_idx++] = uv.readUVI();
+    uint8_t u = uv.readUVI();
+    uvi[uvi_idx++] = u;
+
+    if (u > UVI_LIMIT) {
+      uv.uvTime += 1;
+    }
+    if (uv.uvTime > UVI_TIME_LIMIT) {
+      valueWarning = 1;
+    }
   }
 
   if (ms > showTimeout) {

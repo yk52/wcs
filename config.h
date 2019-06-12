@@ -11,14 +11,17 @@
 #define SCL_PIN				16
 
 #define CO2_LIMIT			1400
+#define VOC_LIMIT			100
+#define UVI_LIMIT			10
+#define UVI_TIME_LIMIT		120
 
 // Pedometer
-#define PEDO_FREQ			50		// 20 Hz
+#define PEDO_FREQ			30		// 20 Hz
 #define X_PIN 				32
 #define Y_PIN 				34
 #define Z_PIN 				35
 #define BUTTON_PIN			27
-#define PEDO_CALIBRATION_SAMPLE_SIZE 20
+#define PEDO_CALIBRATION_SAMPLE_SIZE 40
 #define PEDO_SAMPLE_SIZE 		15
 #define ACCL				90000
 #define WAIT_AFTER_STEP		300
