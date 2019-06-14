@@ -1,4 +1,5 @@
 #include "Adafruit_CCS811.h"
+#include "C:\Users\Yumi\Desktop\wcs\config.h"
 
 /**************************************************************************/
 /*! 
@@ -28,7 +29,8 @@ bool Adafruit_CCS811::begin(uint8_t addr)
 	if(checkError()) return false;
 	if(!_status.FW_MODE) return false;
 	
-	disableInterrupt();
+	enableInterrupt();
+	setThresholds(0, 1400, 50);
 	
 	//default to read every second
 	setDriveMode(CCS811_DRIVE_MODE_1SEC);
