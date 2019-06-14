@@ -13,6 +13,7 @@
 
 
 uint8_t state = LIGHT_SLEEP;
+
 Adafruit_CCS811 ccs;
 Adafruit_VEML6075 uv = Adafruit_VEML6075();
 Adafruit_ADXL335 pedo;
@@ -38,7 +39,6 @@ uint32_t airTimeout = 0;
 uint32_t showTimeout = 0;
 
 int x = 0;
-int j = 0;
 uint16_t co2[CO2_STORAGE_SIZE];  // in ppm
 uint16_t co2_idx = 0;
 uint16_t voc[VOC_STORAGE_SIZE]; // in ppb
@@ -49,7 +49,6 @@ float temp[TEMP_STORAGE_SIZE]; // in degrees
 uint16_t temp_idx = 0;
 
 void buttonISR() {
-  led.toggle();
   if (state == LIGHT_SLEEP) {
     state = ACTIVE;
     sensorsInit();
@@ -58,6 +57,7 @@ void buttonISR() {
   else if (state == ACTIVE) {
     state = LIGHT_SLEEP;
     Serial.println("Good night!");
+    esp_light_sleep_start();
   }
 }
 
@@ -70,7 +70,7 @@ void bluetoothButtonISR() {
 }
 
 void sensorsInit() {
-  // UV 
+  // UV
   if (!uv.begin()) {
     Serial.println("Failed to communicate with VEML6075 UV sensor! Please check your wiring.");
     while (1);
@@ -87,41 +87,38 @@ void sensorsInit() {
   while (!ccs.available());
   float t = ccs.calculateTemperature();
   ccs.setTempOffset(t - 25.0);
-  
+
   pedo.calibrate();
 }
 
 void setup() {
   pinMode(BUTTON_PIN, INPUT);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), buttonISR, FALLING);
-  
+
   // initialize the serial communications:
-  
   Serial.begin(BAUDRATE);
   while (!Serial) {
     delay(10);
   }
   Wire.begin(SDA_PIN, SCL_PIN);
-
+  gpio_wakeup_enable(GPIO_NUM_27, GPIO_INTR_NEGEDGE);
+  esp_sleep_enable_gpio_wakeup();
+  esp_light_sleep_start();
+  buttonISR();
 }
 
 void loop() {
   if (error) {
-      Serial.println("ERROR!");
-      led.on();
-      while(1);
+    // handle error
   }
 
-  if (state == LIGHT_SLEEP) {
-    
-  }
-  else if (state == ACTIVE) {
+  if (state == ACTIVE) {
     if (valueWarning) {
       valueWarning = 0;
     }
-  
+
     ms = timer.getMillis();
-  
+
     if (ms > pedoTimeout) {
       x = pedo.getPedo(); //get the no. of steps
       if (pedo.flag) {
@@ -133,7 +130,7 @@ void loop() {
         pedoTimeout += PEDO_FREQ;
       }
     }
-  
+
     if ((ms > airTimeout) && ccs.available()) {
       airTimeout += AQ_FREQ;
       if (!ccs.readData()) {
@@ -142,11 +139,11 @@ void loop() {
         co2[co2_idx++] = c;
         voc[voc_idx++] = v;
         temp[temp_idx++] = ccs.calculateTemperature();
-  
+
         if ((c >= co2Lim) || v >= vocLim) {
           valueWarning = 1;
         }
-        
+
       } else {
         error = 1;
       }
@@ -155,7 +152,7 @@ void loop() {
       uvTimeout += UV_FREQ;
       uint8_t u = uv.readUVI();
       uvi[uvi_idx++] = u;
-  
+
       if (u > uviLim) {
         uv.uvTime += 1;
       }
@@ -163,30 +160,33 @@ void loop() {
         valueWarning = 1;
       }
     }
-  
+
     if (ms > showTimeout) {
       /*String c = "CO20 ";
-      
-      for (int i = 0; i < co2_idx; i++) {
+
+        for (int i = 0; i < co2_idx; i++) {
         c = c + co2[i] + " ";
-      }
-      c += "CO21";
-      SerialBT.println(c);
-      Serial.println(c);
-      // SerialBT.println(pedo.steps);
-     
-  
-      Serial.print("AQ: ");
-      Serial.println(co2[co2_idx-1]);
-      Serial.print("UV: ");
-      Serial.println(uvi[uvi_idx-1]);
-      Serial.print("Steps: ");
-      Serial.println(pedo.steps);
-      Serial.println();
+        }
+        c += "CO21";
+        SerialBT.println(c);
+        Serial.println(c);
+        // SerialBT.println(pedo.steps);
+
+
+        Serial.print("AQ: ");
+        Serial.println(co2[co2_idx-1]);
+        Serial.print("UV: ");
+        Serial.println(uvi[uvi_idx-1]);
+        Serial.print("Steps: ");
+        Serial.println(pedo.steps);
+        Serial.println();
       */
       Serial.println(ms);
       showTimeout += 1000;
     }
   }
-
+  else if (state == LIGHT_SLEEP) {
+    // this should be light sleep
+    
+  }
 }
