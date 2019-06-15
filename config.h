@@ -2,7 +2,8 @@
 #define CONFIG_H_
 
 #define LIGHT_SLEEP			0
-#define ACTIVE				1
+#define ONLY_BT				1
+#define SENSORS_ACTIVE		2
 
 #define BAUDRATE			9600
 
@@ -10,6 +11,8 @@
 #define	VIBRATION_PIN		19
 #define LEDRED_PIN			15
 #define BUTTON_PIN			27
+#define BT_PIN				12
+#define INTERRUPT_LVL		1
 
 #define SENSORS_EN_PIN		12
 

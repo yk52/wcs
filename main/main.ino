@@ -23,7 +23,10 @@ InterfaceOut led(LEDRED_PIN);
 Timer timer;
 
 bool error = 0;
+uint8_t interruptFlag = 0;
+uint32_t debounceTimer = 0;
 bool valueWarning = 0;
+bool firstBooted = 1;
 
 // Default thresholds
 int co2Lim = 1400;
@@ -48,77 +51,31 @@ uint16_t uvi_idx = 0;
 float temp[TEMP_STORAGE_SIZE]; // in degrees
 uint16_t temp_idx = 0;
 
-void buttonISR() {
-  if (state == LIGHT_SLEEP) {
-    state = ACTIVE;
-    sensorsInit();
-    Serial.println("Vitameter Activated.");
-  }
-  else if (state == ACTIVE) {
-    state = LIGHT_SLEEP;
-    Serial.println("Good night!");
-    esp_light_sleep_start();
-  }
-}
-
-void bluetoothButtonISR() {
-  // If bluetooth off
-  SerialBT.begin("Vitameter Yumi");
-
-  // If bluetooth on
-  // SerialBT.stop();
-}
-
-void sensorsInit() {
-  // UV
-  if (!uv.begin()) {
-    Serial.println("Failed to communicate with VEML6075 UV sensor! Please check your wiring.");
-    while (1);
-  }
-  Serial.println("Found VEML6075 (UV) sensor");
-
-  // Air Quality init
-  if (!ccs.begin()) {
-    Serial.println("Failed to start Air Quality sensor! Please check your wiring.");
-    while (1);
-  }
-  Serial.println("Found CCS811 (Air Quality) sensor");
-  //calibrate temperature sensor on CCS811
-  while (!ccs.available());
-  float t = ccs.calculateTemperature();
-  ccs.setTempOffset(t - 25.0);
-
-  pedo.calibrate();
-}
 
 void setup() {
-  pinMode(BUTTON_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), buttonISR, FALLING);
-
   // initialize the serial communications:
   Serial.begin(BAUDRATE);
   while (!Serial) {
     delay(10);
   }
   Wire.begin(SDA_PIN, SCL_PIN);
-  gpio_wakeup_enable(GPIO_NUM_27, GPIO_INTR_NEGEDGE);
-  esp_sleep_enable_gpio_wakeup();
-  esp_light_sleep_start();
-  buttonISR();
+  pinMode(BUTTON_PIN, INPUT);
 }
 
 void loop() {
+  ms = timer.getMillis();
+  
   if (error) {
     // handle error
+    Serial.println("error");
+    led.on();
+    while(1) {}
   }
 
-  if (state == ACTIVE) {
+  if (state == SENSORS_ACTIVE) {
     if (valueWarning) {
       valueWarning = 0;
     }
-
-    ms = timer.getMillis();
-
     if (ms > pedoTimeout) {
       x = pedo.getPedo(); //get the no. of steps
       if (pedo.flag) {
@@ -181,12 +138,92 @@ void loop() {
         Serial.println(pedo.steps);
         Serial.println();
       */
+      
       Serial.println(ms);
       showTimeout += 1000;
     }
   }
-  else if (state == LIGHT_SLEEP) {
-    // this should be light sleep
+  else if (state == ONLY_BT) {
     
   }
+  else if (state == LIGHT_SLEEP) {
+    goSleep();
+  }
+
+  if (interruptFlag > 0) {
+    if (debounceTimer < ms) {
+      interruptFlag = 0;
+    }
+  }
+}
+
+void goSleep() {
+  Serial.println("Enter sleep");
+  detachInterrupt(digitalPinToInterrupt(BUTTON_PIN));
+  // esp_sleep_enable_ext0_wakeup(GPIO_NUM_27, 1); // for deep sleep
+  // TODO Add Bluetooth button later
+  gpio_wakeup_enable(GPIO_NUM_27, GPIO_INTR_HIGH_LEVEL);
+  // gpio_wakeup_enable(GPIO_NUM_blabla, GPIO_INTR_HIGH_LEVEL);
+  esp_sleep_enable_gpio_wakeup();
+  esp_light_sleep_start();
+  wakeUp();
+}
+
+void wakeUp() {
+  if (digitalRead(BUTTON_PIN) == 1) {
+    state = SENSORS_ACTIVE;
+    sensorsInit();
+  }
+  else if (digitalRead(BT_PIN) == 1) {
+    state = ONLY_BT;
+    SerialBT.begin("Vitameter Yumi");
+  }
+  esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_GPIO);
+  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), buttonISR, RISING);
+  attachInterrupt(digitalPinToInterrupt(BT_PIN), buttonISR, RISING);
+  Serial.println("Good morning!");
+}
+
+void buttonISR() {
+  if (interruptFlag == 0) {
+    interruptFlag++;
+    debounceTimer = ms + 100;
+    led.toggle();
+
+    if (state == SENSORS_ACTIVE) {
+      // esp_bt_controller_disable() ??
+      state = LIGHT_SLEEP;
+    }
+  }
+}
+
+void bluetoothButtonISR() {
+  // Only for BT off, because BT on is handled in wakeup function
+  // If bluetooth on
+  // SerialBT.stop();
+  if (interruptFlag == 0) {
+    interruptFlag++;
+    debounceTimer = timer.getMillis() + 100;
+  }
+}
+
+void sensorsInit() {
+  // UV
+  if (!uv.begin()) {
+    Serial.println("Failed to communicate with VEML6075 UV sensor! Please check your wiring.");
+    while (1);
+  }
+  Serial.println("Found VEML6075 (UV) sensor");
+
+  // Air Quality init
+  if (!ccs.begin()) {
+    Serial.println("Failed to start Air Quality sensor! Please check your wiring.");
+    while (1);
+  }
+  Serial.println("Found CCS811 (Air Quality) sensor");
+  //calibrate temperature sensor on CCS811
+  while (!ccs.available());
+  float t = ccs.calculateTemperature();
+  ccs.setTempOffset(t - 25.0);
+  pedo.calibrate();
 }
