@@ -160,6 +160,7 @@ void loop() {
 void goSleep() {
   Serial.println("Enter sleep");
   detachInterrupt(digitalPinToInterrupt(BUTTON_PIN));
+  delay(2000);
   // esp_sleep_enable_ext0_wakeup(GPIO_NUM_27, 1); // for deep sleep
   // TODO Add Bluetooth button later
   gpio_wakeup_enable(GPIO_NUM_27, GPIO_INTR_HIGH_LEVEL);

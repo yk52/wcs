@@ -17,6 +17,7 @@ class Timer {
 			uint32_t schedule[20] = {0};
 		};
 		~Timer(void) {};
+		void init(void);
 		uint32_t getMillis(void);
 		uint32_t getTicks(void);
 		void check(void);

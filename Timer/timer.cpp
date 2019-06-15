@@ -1,4 +1,5 @@
 #include "C:\Users\Yumi\Desktop\wcs\Timer\Timer.h"
+// include rtc.h?
 
 /**************************************************************************/
 /*! 
@@ -7,6 +8,17 @@
 /**************************************************************************/
 
 bool flag = false;
+
+void Timer::init(void) {
+	rtc_clk_init(slow_freq : 2);
+	rtc_clk_32k_enable_external();
+	rtc_clk_slow_freq_set(1);
+	int hz = rtc_clk_slow_freq_get_hz(); // should return 32768
+	if (hz != 32768) {
+		// TODO
+		while (1) { }
+	}
+}
 
 uint32_t Timer::getMillis(void) {
 	float currentTicks = (float) clock();
