@@ -29,6 +29,7 @@
 #define VOC_STORAGE_SIZE	5000
 #define TEMP_STORAGE_SIZE	5000
 #define UVI_STORAGE_SIZE	5000
+#define WARNING_STORAGE_SIZE 50
 
 // Pedometer
 #define X_PIN 				32

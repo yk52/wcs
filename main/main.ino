@@ -9,6 +9,7 @@
 #include <Adafruit_ADXL335.h>
 #include <InterfaceOut.h>
 #include <Timer.h>
+#include <Values.h>
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
 
@@ -21,18 +22,14 @@ BluetoothSerial SerialBT;
 InterfaceOut vib(VIBRATION_PIN);
 InterfaceOut led(LEDRED_PIN);
 Timer timer;
+Values values;
+
 
 bool error = 0;
 uint8_t interruptFlag = 0;
 uint32_t debounceTimer = 0;
 bool valueWarning = 0;
 bool firstBooted = 1;
-
-// Default thresholds
-int co2Lim = 1400;
-int vocLim = 100;
-int uviLim = 8;
-int uviTimeLim = 120;
 
 // Timers
 uint32_t ms = 0;
@@ -41,15 +38,7 @@ uint32_t uvTimeout = 0;
 uint32_t airTimeout = 0;
 uint32_t showTimeout = 0;
 
-int x = 0;
-uint16_t co2[CO2_STORAGE_SIZE];  // in ppm
-uint16_t co2_idx = 0;
-uint16_t voc[VOC_STORAGE_SIZE]; // in ppb
-uint16_t voc_idx = 0;
-uint8_t uvi[UVI_STORAGE_SIZE];   // UV index
-uint16_t uvi_idx = 0;
-float temp[TEMP_STORAGE_SIZE]; // in degrees
-uint16_t temp_idx = 0;
+
 
 
 void setup() {
@@ -65,19 +54,17 @@ void setup() {
 void loop() {
   ms = timer.getMillis();
   
-  if (error) {
-    // handle error
-    Serial.println("error");
-    led.on();
-    while(1) {}
-  }
-
   if (state == SENSORS_ACTIVE) {
+    /*  Values.check();
     if (valueWarning) {
       valueWarning = 0;
     }
+    */
     if (ms > pedoTimeout) {
-      x = pedo.getPedo(); //get the no. of steps
+      uint16_t x = pedo.getPedo();
+      values.storeSteps(x);
+      
+      // Step registered
       if (pedo.flag) {
         Serial.println(x);
         pedoTimeout += WAIT_AFTER_STEP;
@@ -93,13 +80,9 @@ void loop() {
       if (!ccs.readData()) {
         uint16_t c = ccs.geteCO2();
         uint16_t v = ccs.getTVOC();
-        co2[co2_idx++] = c;
-        voc[voc_idx++] = v;
-        temp[temp_idx++] = ccs.calculateTemperature();
-
-        if ((c >= co2Lim) || v >= vocLim) {
-          valueWarning = 1;
-        }
+        values.storeCO2(c);
+        values.storeVOC(v);
+        values.storeTemp(ccs.calculateTemperature());
 
       } else {
         error = 1;
@@ -108,14 +91,7 @@ void loop() {
     if (ms > uvTimeout) {
       uvTimeout += UV_FREQ;
       uint8_t u = uv.readUVI();
-      uvi[uvi_idx++] = u;
-
-      if (u > uviLim) {
-        uv.uvTime += 1;
-      }
-      if (uv.uvTime > uviTimeLim) {
-        valueWarning = 1;
-      }
+      values.storeUVI(u);
     }
 
     if (ms > showTimeout) {
@@ -204,7 +180,7 @@ void bluetoothButtonISR() {
   // SerialBT.stop();
   if (interruptFlag == 0) {
     interruptFlag++;
-    debounceTimer = timer.getMillis() + 100;
+    debounceTimer = ms + 100;
   }
 }
 
@@ -212,7 +188,7 @@ void sensorsInit() {
   // UV
   if (!uv.begin()) {
     Serial.println("Failed to communicate with VEML6075 UV sensor! Please check your wiring.");
-    while (1);
+    error = 1;
   }
   Serial.println("Found VEML6075 (UV) sensor");
 
