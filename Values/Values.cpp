@@ -1,4 +1,4 @@
-#include "C:\Users\Yumi\Desktop\wcs\InterfaceOut\Values.h"
+#include "C:\Users\Yumi\Desktop\wcs\Values\Values.h"
 
 /**************************************************************************/
 /*! 
@@ -8,6 +8,7 @@
 
 uint16_t co2Thresh = 1400;
 uint16_t vocThresh = 100;
+float tempThresh = 30.0;
 uint8_t uviThresh = 8;
 uint8_t uviDurationThresh = 10;
 uint8_t uviDuration = 0;
@@ -30,7 +31,7 @@ void Values::setVOCThresh(uint16_t val) {
 	vocThresh = val;
 }
 
-void Values::setTempThresh(uint16_t val) {
+void Values::setTempThresh(float val) {
 	tempThresh = val;
 }
 
@@ -60,7 +61,7 @@ void Values::storeVOC(uint16_t val) {
 	}
 }
 
-void Values::storeTemp(uint16_t val) {
+void Values::storeTemp(float val) {
 	temp[temp_idx++] = val;
 }
 

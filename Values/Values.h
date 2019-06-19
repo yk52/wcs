@@ -20,6 +20,7 @@ class Values {
 		// Default thresholds
 		uint16_t co2Thresh;
 		uint16_t vocThresh;
+		float tempThresh;
 		uint8_t uviThresh;
 		uint8_t uviDurationThresh;
 		uint8_t uviDuration;
@@ -45,7 +46,7 @@ class Values {
 		// Set Threshold values
 		void setCO2Thresh(uint16_t val);
 		void setVOCThresh(uint16_t val);
-		void setTempThresh(uint16_t val);
+		void setTempThresh(float val);
 		void setStepGoal(uint16_t val);
 		void setUVIThresh(uint8_t val);
 		void setUVIDurationThresh(uint8_t val);
@@ -53,7 +54,7 @@ class Values {
 		// Store values and check at the same time.
 		void storeCO2(uint16_t);
 		void storeVOC(uint16_t);
-		void storeTemp(uint16_t);
+		void storeTemp(float);
 		void storeSteps(uint16_t);
 		void storeUVI(uint8_t);
 
