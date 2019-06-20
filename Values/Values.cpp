@@ -1,4 +1,6 @@
 #include "C:\Users\Yumi\Desktop\wcs\Values\Values.h"
+#include <stdio.h>
+using namespace std;
 
 /**************************************************************************/
 /*! 
@@ -7,20 +9,21 @@
 /**************************************************************************/
 
 uint16_t co2Thresh = 1400;
-uint16_t vocThresh = 100;
+uint16_t vocThresh = 1;
 float tempThresh = 30.0;
 uint8_t uviThresh = 8;
 uint8_t uviDurationThresh = 10;
 uint8_t uviDuration = 0;
+uint16_t stepGoal = 10000;
+
 uint16_t co2_idx = 0;
 uint16_t voc_idx = 0;
 uint16_t uvi_idx = 0;
 uint16_t temp_idx = 0;
-uint16_t stepGoal = 10000;
+
 
 uint16_t warn_idx = 0;
 bool warningOverflow = 0;
-bool dismissSteps = 0;
 
 
 void Values::setCO2Thresh(uint16_t val) {
@@ -65,10 +68,13 @@ void Values::storeTemp(float val) {
 	temp[temp_idx++] = val;
 }
 
-void Values::storeSteps(uint16_t val) {
+bool Values::storeSteps(uint16_t val) {
 	steps = val;
-	if (steps >= stepGoal && !dismissSteps) {
-		// Do something
+	if (steps == stepGoal) {
+		return 1;
+	}
+	else {
+		return 0;
 	}
 
 }
@@ -80,5 +86,29 @@ void Values::storeUVI(uint8_t val) {
 	}
 	if (uviDuration >= uviDurationThresh) {
 		// Warning
+	}
+}
+
+void Values::processMessage() {
+	if (rxValue.find(":") != -1) {
+		size_t cut = rxValue.find(":");
+
+	    std::string parameter = rxValue.substr(0, cut);
+		std::string sValue = rxValue.substr(cut, -1);
+		int value = atoi(sValue);
+
+		if (parameter.compare("Skintype")) {
+			m_Skintype = value;
+		} else if (parameter.compare("UVthreshold")) {
+			m_UVthreshold = value;
+		} else if (parameter.compare("AQthreshold")) {
+			m_AQthreshold = value;
+
+	} else if (rxValue.find("DataRequest") != -1) {
+		// init serial bluetooth
+	} else if (rxValue.find("get") != -1) {
+		char txString[20] = "AQthreshold: " + std::to_string(AQthreshold);
+		pCharacteristic->setValue(txString);
+		pCharacteristic->notify(); 						// Send the value
 	}
 }

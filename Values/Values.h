@@ -34,14 +34,13 @@ class Values {
 		// Storage arrays
 		uint16_t co2[CO2_STORAGE_SIZE] = {0};  // in ppm
 		uint16_t co2_idx;
-		uint16_t voc[VOC_STORAGE_SIZE] = {0}; // in ppb
+		uint16_t voc[VOC_STORAGE_SIZE] = {0}; // in ppb, bzw. mg/m3
 		uint16_t voc_idx;
 		uint8_t uvi[UVI_STORAGE_SIZE] = {0};   // UV index
 		uint16_t uvi_idx;
 		float temp[TEMP_STORAGE_SIZE] = {0}; // in degrees
 		uint16_t temp_idx;
 		uint16_t steps;
-		bool dismissSteps;
 
 		// Set Threshold values
 		void setCO2Thresh(uint16_t val);
@@ -51,12 +50,16 @@ class Values {
 		void setUVIThresh(uint8_t val);
 		void setUVIDurationThresh(uint8_t val);
 
+		// Get Thresh values und aktuell
+
 		// Store values and check at the same time.
 		void storeCO2(uint16_t);
 		void storeVOC(uint16_t);
 		void storeTemp(float);
-		void storeSteps(uint16_t);
+		bool storeSteps(uint16_t);
 		void storeUVI(uint8_t);
+
+		void processMessage(void);
 
 
 

@@ -4,6 +4,7 @@
 
 #include <Wire.h>
 #include <BluetoothSerial.h>
+//#include <BLE_wcs.h>
 #include <Adafruit_CCS811.h>
 #include <Adafruit_VEML6075.h>
 #include <Adafruit_ADXL335.h>
@@ -18,7 +19,10 @@ uint8_t state = LIGHT_SLEEP;
 Adafruit_CCS811 ccs;
 Adafruit_VEML6075 uv = Adafruit_VEML6075();
 Adafruit_ADXL335 pedo;
+
 BluetoothSerial SerialBT;
+// BLE_wcs ble;
+
 InterfaceOut vib(VIBRATION_PIN);
 InterfaceOut led(LEDRED_PIN);
 Timer timer;
@@ -38,7 +42,7 @@ uint32_t uvTimeout = 0;
 uint32_t airTimeout = 0;
 uint32_t showTimeout = 0;
 
-
+bool bleOn = 0;
 
 
 void setup() {
@@ -49,6 +53,7 @@ void setup() {
   }
   Wire.begin(SDA_PIN, SCL_PIN);
   pinMode(BUTTON_PIN, INPUT);
+  SerialBT.begin("Yumi"); // TODO
 }
 
 void loop() {
@@ -60,9 +65,14 @@ void loop() {
       valueWarning = 0;
     }
     */
+    /*
     if (ms > pedoTimeout) {
       uint16_t x = pedo.getPedo();
-      values.storeSteps(x);
+      bool goalAchieved = values.storeSteps(x);
+
+      if (goalAchieved) {
+        // Do some fancy light and Vibration stuff
+      }
       
       // Step registered
       if (pedo.flag) {
@@ -93,7 +103,7 @@ void loop() {
       uint8_t u = uv.readUVI();
       values.storeUVI(u);
     }
-
+*/
     if (ms > showTimeout) {
       /*String c = "CO20 ";
 
@@ -116,6 +126,7 @@ void loop() {
       */
       
       Serial.println(ms);
+      SerialBT.println(ms);
       showTimeout += 1000;
     }
   }
@@ -134,6 +145,7 @@ void loop() {
 }
 
 void goSleep() {
+  // delete(&SerialBT);   // TODO
   Serial.println("Enter sleep");
   detachInterrupt(digitalPinToInterrupt(BUTTON_PIN));
   delay(2000);
@@ -149,11 +161,15 @@ void goSleep() {
 void wakeUp() {
   if (digitalRead(BUTTON_PIN) == 1) {
     state = SENSORS_ACTIVE;
-    sensorsInit();
+    // sensorsInit(); später wieder Entkommentieren!
+    
+    // BluetoothSerial SerialBT; // TODO
+    // SerialBT.begin("Yumi"); // TODO
   }
   else if (digitalRead(BT_PIN) == 1) {
     state = ONLY_BT;
-    SerialBT.begin("Vitameter Yumi");
+    // ble.init(); TODO
+    bleOn = 1;
   }
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_GPIO);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), buttonISR, RISING);
@@ -177,10 +193,20 @@ void buttonISR() {
 void bluetoothButtonISR() {
   // Only for BT off, because BT on is handled in wakeup function
   // If bluetooth on
-  // SerialBT.stop();
+
+
   if (interruptFlag == 0) {
     interruptFlag++;
     debounceTimer = ms + 100;
+    if (bleOn) {
+      // ble.deinit(); TODO
+      bleOn = 0;
+    }
+    else {
+      // ble.init(); TODO
+      bleOn = 1;
+    }
+
   }
 }
 

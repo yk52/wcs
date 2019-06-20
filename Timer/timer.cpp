@@ -8,6 +8,7 @@
 /**************************************************************************/
 
 bool flag = false;
+uint32_t globalBootTime = 0;
 
 void Timer::init(void) {
 	rtc_clk_init(slow_freq : 2);
