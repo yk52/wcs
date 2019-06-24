@@ -1,6 +1,5 @@
 #include "C:\Users\Yumi\Desktop\wcs\Values\Values.h"
-#include <stdio.h>
-using namespace std;
+
 
 /**************************************************************************/
 /*! 
@@ -12,7 +11,7 @@ uint16_t co2Thresh = 1400;
 uint16_t vocThresh = 1;
 float tempThresh = 30.0;
 uint8_t uviThresh = 8;
-uint8_t uviDurationThresh = 10;
+uint8_t uviDurationThresh = 10; // Dont allow more than 255 minutes in sun
 uint8_t uviDuration = 0;
 uint16_t stepGoal = 10000;
 
@@ -89,7 +88,50 @@ void Values::storeUVI(uint8_t val) {
 	}
 }
 
-void Values::processMessage() {
+// Get Thresholds...
+uint16_t getCO2Thresh(void) {
+	uint8_t LO = EEPROM.read(CO2_THRESH_ADDR_LO);
+	uint16_t HI = EEPROM.read(CO2_THRESH_ADDR_HI);
+	uint16_t thresh = (HI << 8) || LO;
+	return thresh;
+}
+
+uint16_t getVOCThresh(void) {
+	uint16_t thresh = EEPROM.read(VOC_THRESH_ADDR);
+	return thresh;
+}
+
+float getTempThresh(void) {
+	float thresh = (float)EEPROM.read(TEMP_THRESH_ADDR);
+	return thresh;
+}
+
+uint16_t getStepGoal(void) {
+	uint8_t LO = EEPROM.read(STEP_GOAL_ADDR_LO);
+	uint16_t HI = EEPROM.read(STEP_GOAL_ADDR_HI);
+	uint16_t goal = (HI << 8) || LO;
+	return goal;
+}
+
+uint8_t getUVIThresh(void) {
+	return EEPROM.read(UVI_THRESH_ADDR);
+}
+
+uint8_t getUVIDurationThresh(void) {
+	return EEPROM.read(UVI_DUR_THRESH_ADDR);
+}
+
+// ...and most recent values
+uint16_t getLastCO2(void);
+uint16_t getLastVOC(void);
+float getLastTemp(void);
+uint16_t getLastStep(void);
+uint8_t getLastUVI(void);
+uint8_t getLastUVIDuration(void);
+
+// TODO
+void Values::processMessage(string rxValue) {
+	/*
 	if (rxValue.find(":") != -1) {
 		size_t cut = rxValue.find(":");
 
@@ -111,4 +153,5 @@ void Values::processMessage() {
 		pCharacteristic->setValue(txString);
 		pCharacteristic->notify(); 						// Send the value
 	}
+	*/
 }

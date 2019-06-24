@@ -1,20 +1,22 @@
 #ifndef VALUES_H_
 #define VALUES_H_
 
-#if (ARDUINO >= 100)
- #include "Arduino.h"
-#else
- #include "WProgram.h"
-#endif
+#include "Arduino.h"
+
+// #include "WProgram.h"
 
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
-
+#include <EEPROM.h>
+#include <stdio.h>
+using namespace std;
 
 
 class Values {
 	public:
 		//constructors
-		Values(void) {};
+		Values(void) {
+			EEPROM.begin(FLASH_SIZE);
+		};
 		~Values(void) {};
 
 		// Default thresholds
@@ -50,7 +52,21 @@ class Values {
 		void setUVIThresh(uint8_t val);
 		void setUVIDurationThresh(uint8_t val);
 
-		// Get Thresh values und aktuell
+		// Get Thresholds...
+		uint16_t getCO2Thresh(void);
+		uint16_t getVOCThresh(void);
+		float getTempThresh(void);
+		uint16_t getStepGoal(void);
+		uint8_t getUVIThresh(void);
+		uint8_t getUVIDurationThresh(void);
+
+		// ...and most recent values
+		uint16_t getLastCO2(void);
+		uint16_t getLastVOC(void);
+		float getLastTemp(void);
+		uint16_t getLastStep(void);
+		uint8_t getLastUVI(void);
+		uint8_t getLastUVIDuration(void);
 
 		// Store values and check at the same time.
 		void storeCO2(uint16_t);
@@ -59,7 +75,8 @@ class Values {
 		bool storeSteps(uint16_t);
 		void storeUVI(uint8_t);
 
-		void processMessage(void);
+		// String must look like: "UVthreshold:10"
+		void processMessage(string);
 
 
 

@@ -16,18 +16,18 @@
 
 uint8_t state = LIGHT_SLEEP;
 
+BluetoothSerial SerialBT;
+// BLE_wcs ble;
+
+Timer timer;
+Values values;
+
 Adafruit_CCS811 ccs;
 Adafruit_VEML6075 uv = Adafruit_VEML6075();
 Adafruit_ADXL335 pedo;
 
-BluetoothSerial SerialBT;
-// BLE_wcs ble;
-
 InterfaceOut vib(VIBRATION_PIN);
 InterfaceOut led(LEDRED_PIN);
-Timer timer;
-Values values;
-
 
 bool error = 0;
 uint8_t interruptFlag = 0;
@@ -47,13 +47,14 @@ bool bleOn = 0;
 
 void setup() {
   // initialize the serial communications:
+
   Serial.begin(BAUDRATE);
   while (!Serial) {
     delay(10);
   }
   Wire.begin(SDA_PIN, SCL_PIN);
   pinMode(BUTTON_PIN, INPUT);
-  SerialBT.begin("Yumi"); // TODO
+  // SerialBT.begin("Yumi"); // TODO
 }
 
 void loop() {
@@ -65,7 +66,7 @@ void loop() {
       valueWarning = 0;
     }
     */
-    /*
+    
     if (ms > pedoTimeout) {
       uint16_t x = pedo.getPedo();
       bool goalAchieved = values.storeSteps(x);
@@ -103,31 +104,31 @@ void loop() {
       uint8_t u = uv.readUVI();
       values.storeUVI(u);
     }
-*/
+
     if (ms > showTimeout) {
-      /*String c = "CO20 ";
+      /*
+      String c = "CO20 ";
+      for (int i = 0; i < co2_idx; i++) {
+      c = c + co2[i] + " ";
+      }
+      c += "CO21";
+      // SerialBT.println(c);
+      Serial.println(c);
+      // SerialBT.println(pedo.steps);
 
-        for (int i = 0; i < co2_idx; i++) {
-        c = c + co2[i] + " ";
-        }
-        c += "CO21";
-        SerialBT.println(c);
-        Serial.println(c);
-        // SerialBT.println(pedo.steps);
 
-
-        Serial.print("AQ: ");
-        Serial.println(co2[co2_idx-1]);
-        Serial.print("UV: ");
-        Serial.println(uvi[uvi_idx-1]);
-        Serial.print("Steps: ");
-        Serial.println(pedo.steps);
-        Serial.println();
+      Serial.print("AQ: ");
+      Serial.println(co2[co2_idx-1]);
+      Serial.print("UV: ");
+      Serial.println(uvi[uvi_idx-1]);
+      Serial.print("Steps: ");
+      Serial.println(pedo.steps);
+      Serial.println();
       */
-      
-      Serial.println(ms);
-      SerialBT.println(ms);
+
+      // SerialBT.println(ms);
       showTimeout += 1000;
+
     }
   }
   else if (state == ONLY_BT) {
@@ -161,7 +162,7 @@ void goSleep() {
 void wakeUp() {
   if (digitalRead(BUTTON_PIN) == 1) {
     state = SENSORS_ACTIVE;
-    // sensorsInit(); später wieder Entkommentieren!
+    sensorsInit();
     
     // BluetoothSerial SerialBT; // TODO
     // SerialBT.begin("Yumi"); // TODO

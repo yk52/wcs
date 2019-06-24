@@ -7,6 +7,18 @@
 
 #define BAUDRATE			9600
 
+#define FLASH_SIZE			4000000 // 4 MB
+#define CO2_THRESH_ADDR_LO		0
+#define CO2_THRESH_ADDR_HI		1
+#define UVI_DUR_THRESH_ADDR		2
+#define UVI_THRESH_ADDR			3
+#define VOC_THRESH_ADDR			3
+#define TEMP_THRESH_ADDR		4
+#define STEP_GOAL_ADDR_LO		5
+#define STEP_GOAL_ADDR_HI		6
+
+
+
 // Currently arbitary numbers.
 #define	VIBRATION_PIN		19
 #define LEDRED_PIN			15

@@ -1,6 +1,5 @@
 #include "C:\Users\Yumi\Desktop\wcs\InterfaceOut\InterfaceOut.h"
-#include <stdio.h>
-using namespace std;
+
 
 /**************************************************************************/
 /*! 
