@@ -16,13 +16,33 @@ class Values {
 		//constructors
 		Values(void) {
 			EEPROM.begin(FLASH_SIZE);
+			if (EEPROM.read(VALUES_SET_ADDR) != 1) {
+				// Values initiated flag
+				EEPROM.write(VALUES_SET_ADDR, 1);
+				// Set thresholds
+				EEPROM.write(VOC_THRESH_ADDR, 1);
+				EEPROM.write(UVI_THRESH_ADDR, 8);
+				EEPROM.write(UVI_DUR_THRESH_ADDR, 10);
+				EEPROM.write(TEMP_THRESH_ADDR, 30);
+				EEPROM.write(CO2_THRESH_ADDR_HI, 0x05); // 0x0578 = 1400
+				EEPROM.write(CO2_THRESH_ADDR_LO, 0x78);
+				EEPROM.write(STEP_GOAL_ADDR_HI, 0x27); // 0x2710 = 10000
+				EEPROM.write(STEP_GOAL_ADDR_LO, 0x10);
+				// Set Flash storage indices
+				EEPROM.write(CO2_FLASH__IDX_ADDR, 0);
+				EEPROM.write(VOC_FLASH__IDX_ADDR, 0);
+				EEPROM.write(UVI_FLASH__IDX_ADDR, 0);
+				EEPROM.write(TEMP_FLASH__IDX_ADDR, 0);
+
+				EEPROM.commit();
+			}
 		};
 		~Values(void) {};
 
 		// Default thresholds
 		uint16_t co2Thresh;
 		uint16_t vocThresh;
-		float tempThresh;
+		uint8_t tempThresh;
 		uint8_t uviThresh;
 		uint8_t uviDurationThresh;
 		uint8_t uviDuration;
@@ -35,19 +55,19 @@ class Values {
 
 		// Storage arrays
 		uint16_t co2[CO2_STORAGE_SIZE] = {0};  // in ppm
-		uint16_t co2_idx;
+		uint8_t co2_idx;
 		uint16_t voc[VOC_STORAGE_SIZE] = {0}; // in ppb, bzw. mg/m3
-		uint16_t voc_idx;
+		uint8_t voc_idx;
 		uint8_t uvi[UVI_STORAGE_SIZE] = {0};   // UV index
-		uint16_t uvi_idx;
+		uint8_t uvi_idx;
 		float temp[TEMP_STORAGE_SIZE] = {0}; // in degrees
-		uint16_t temp_idx;
+		uint8_t temp_idx;
 		uint16_t steps;
 
 		// Set Threshold values
 		void setCO2Thresh(uint16_t val);
 		void setVOCThresh(uint16_t val);
-		void setTempThresh(float val);
+		void setTempThresh(uint8_t val);
 		void setStepGoal(uint16_t val);
 		void setUVIThresh(uint8_t val);
 		void setUVIDurationThresh(uint8_t val);
@@ -55,7 +75,7 @@ class Values {
 		// Get Thresholds...
 		uint16_t getCO2Thresh(void);
 		uint16_t getVOCThresh(void);
-		float getTempThresh(void);
+		uint8_t getTempThresh(void);
 		uint16_t getStepGoal(void);
 		uint8_t getUVIThresh(void);
 		uint8_t getUVIDurationThresh(void);

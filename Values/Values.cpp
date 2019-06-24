@@ -7,46 +7,71 @@
 */
 /**************************************************************************/
 
-uint16_t co2Thresh = 1400;
-uint16_t vocThresh = 1;
-float tempThresh = 30.0;
-uint8_t uviThresh = 8;
-uint8_t uviDurationThresh = 10; // Dont allow more than 255 minutes in sun
-uint8_t uviDuration = 0;
-uint16_t stepGoal = 10000;
 
+// SRAM storage index
 uint16_t co2_idx = 0;
 uint16_t voc_idx = 0;
 uint16_t uvi_idx = 0;
 uint16_t temp_idx = 0;
 
+uint8_t uviDuration = 0;
 
 uint16_t warn_idx = 0;
 bool warningOverflow = 0;
 
 
 void Values::setCO2Thresh(uint16_t val) {
-	co2Thresh = val;
+	uint8_t oldLo = EEPROM.read(CO2_THRESH_ADDR_LO);
+	uint16_t oldHi = EEPROM.read(CO2_THRESH_ADDR_HI);
+	uint16_t oldVal = (HI << 8) || LO;
+	if (oldVal != val) {
+		uint8_t newLo = val && 0xFF;
+		uint8_t newHi = (val >> 8) && 0xFF;
+		EEPROM.write(CO2_THRESH_ADDR_LO, newLo);
+		EEPROM.write(CO2_THRESH_ADDR_HI, newHi);
+	}
 }
 
+// check that maximum val <= 255 in application!
 void Values::setVOCThresh(uint16_t val) {
-	vocThresh = val;
+	uint16_t oldVal = EEPROM.read(VOC_THRESH_ADDR);
+	if (oldVal != val) {
+		val = (uint8_t) val
+		EEPROM.write(VOC_THRESH_ADDR, val);
+	}
 }
 
-void Values::setTempThresh(float val) {
-	tempThresh = val;
+void Values::setTempThresh(uint8_t val) {
+	uint8_t oldVal = EEPROM.read(TEMP_THRESH_ADDR);
+	if (oldVal != val) {
+		EEPROM.write(TEMP_THRESH_ADDR, val);
+	}
 }
 
 void Values::setStepGoal(uint16_t val) {
-	stepGoal = val;
+	uint8_t oldLo = EEPROM.read(STEP_GOAL_ADDR_LO);
+	uint16_t oldHi = EEPROM.read(STEP_GOAL_ADDR_HI);
+	uint16_t oldVal = (HI << 8) || LO;
+	if (oldVal != val) {
+		uint8_t newLo = val && 0xFF;
+		uint8_t newHi = (val >> 8) && 0xFF;
+		EEPROM.write(STEP_GOAL_ADDR_LO, newLo);
+		EEPROM.write(STEP_GOAL_ADDR_HI, newHi);
+	}
 }
 
 void Values::setUVIThresh(uint8_t val) {
-	uviThresh = val;
+	uint8_t oldVal = EEPROM.read(UVI_THRESH_ADDR);
+	if (oldVal != val) {
+		EEPROM.write(UVI_THRESH_ADDR, val);
+	}
 }
 
 void Values::setUVIDurationThresh(uint8_t val) {
-	uviDurationThresh = val;
+	uint8_t oldVal = EEPROM.read(UVI_DUR_THRESH_ADDR);
+	if (oldVal != val) {
+		EEPROM.write(UVI_DUR_THRESH_ADDR, val);
+	}
 }
 
 void Values::storeCO2(uint16_t val) {
@@ -101,7 +126,7 @@ uint16_t getVOCThresh(void) {
 	return thresh;
 }
 
-float getTempThresh(void) {
+uint8_t getTempThresh(void) {
 	float thresh = (float)EEPROM.read(TEMP_THRESH_ADDR);
 	return thresh;
 }

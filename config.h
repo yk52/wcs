@@ -8,7 +8,8 @@
 #define BAUDRATE			9600
 
 #define FLASH_SIZE			4000000 // 4 MB
-#define CO2_THRESH_ADDR_LO		0
+#define VALUES_SET_ADDR			0
+#define CO2_THRESH_ADDR_LO		1
 #define CO2_THRESH_ADDR_HI		1
 #define UVI_DUR_THRESH_ADDR		2
 #define UVI_THRESH_ADDR			3
@@ -16,6 +17,20 @@
 #define TEMP_THRESH_ADDR		4
 #define STEP_GOAL_ADDR_LO		5
 #define STEP_GOAL_ADDR_HI		6
+
+// Store current FLASH storage index before going to sleep and every 150 min
+#define CO2_FLASH_IDX_ADDR
+#define VOC_FLASH__IDX_ADDR
+#define UVI_FLASH__IDX_ADDR
+#define TEMP_FLASH__IDX_ADDR
+
+#define STEP_ADDR
+
+
+
+
+
+//
 
 
 
@@ -37,10 +52,11 @@
 #define AQ_FREQ				600000	// 10 min
 #define UV_FREQ				60000	// 1 min
 
-#define CO2_STORAGE_SIZE	5000
-#define VOC_STORAGE_SIZE	5000
-#define TEMP_STORAGE_SIZE	5000
-#define UVI_STORAGE_SIZE	5000
+// Hold info for 150 minutes
+#define CO2_STORAGE_SIZE	15
+#define VOC_STORAGE_SIZE	15
+#define TEMP_STORAGE_SIZE	15
+#define UVI_STORAGE_SIZE	150
 #define WARNING_STORAGE_SIZE 50
 
 // Pedometer
