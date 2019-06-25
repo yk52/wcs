@@ -1,7 +1,7 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#define LIGHT_SLEEP			0
+#define DEEP_SLEEP			0
 #define ONLY_BT				1
 #define SENSORS_ACTIVE		2
 

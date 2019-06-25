@@ -4,7 +4,7 @@
 
 #include <Wire.h>
 #include <BluetoothSerial.h>
-//#include <BLE_wcs.h>
+#include <BLE_wcs.h>
 #include <Adafruit_CCS811.h>
 #include <Adafruit_VEML6075.h>
 #include <Adafruit_ADXL335.h>
@@ -166,7 +166,7 @@ void goSleep() {
   // TODO change Interrupt level if necessary
   gpio_wakeup_enable(GPIO_NUM_27, GPIO_INTR_HIGH_LEVEL);
   esp_sleep_enable_gpio_wakeup();
-  esp_DEEP_SLEEP_start();
+  esp_light_sleep_start();
   wakeUp();
 }
 

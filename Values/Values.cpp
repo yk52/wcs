@@ -115,8 +115,8 @@ uint16_t Values::getCO2Thresh(void) {
 	return thresh;
 }
 
-uint16_t Values::getVOCThresh(void) {
-	uint16_t thresh = EEPROM.read(VOC_THRESH_ADDR);
+uint8_t Values::getVOCThresh(void) {
+	uint8_t thresh = EEPROM.read(VOC_THRESH_ADDR);
 	return thresh;
 }
 
@@ -176,7 +176,10 @@ uint16_t Values::getCurrentUVIFlashIdx(void) {
 uint16_t Values::getLastCO2(void) {
 	return co2[co2_idx-1];
 }
-uint16_t Values::getLastVOC(void);
+
+uint16_t Values::getLastVOC(void) {
+	return voc[voc_idx-1];
+}
 
 float Values::getLastTemp(void) {
 	if (temp_idx != 0) {
@@ -188,7 +191,7 @@ uint16_t Values::getLastStep(void) {
 	return steps;
 }
 uint8_t Values::getLastUVI(void) {
-	return uvi[uvi_idx-1]
+	return uvi[uvi_idx-1];
 }
 
 uint8_t Values::getLastUVIDuration(void) {
@@ -258,17 +261,21 @@ void Values::storeCO2(uint16_t val) {
 void Values::storeVOC(uint16_t val) {
 	voc[voc_idx++] = val;
 	if (val >= vocThresh) {
-		// Do something, Light LED or what else
+		setVOCFlag();
 	}
 }
 
 void Values::storeTemp(float val) {
 	temp[temp_idx++] = val;
+	if (val >= tempThresh) {
+		setTempFlag();
+	}
 }
 
 bool Values::storeSteps(uint16_t val) {
 	steps = val;
 	if (steps == stepGoal) {
+		setStepFlag();
 		return 1;
 	}
 	else {
@@ -287,7 +294,7 @@ void Values::storeUVI(uint8_t val) {
 		uviDuration++;
 	}
 	if (uviDuration >= uviDurationThresh) {
-		// Warning
+		setUVIFlag();
 	}
 }
 
@@ -347,8 +354,8 @@ bool Values::storeRAMToFlash(void) {
     }
     // Store UV
     uint16_t uviFlash_idx = getCurrentUVIFlashIdx();
-    for (int i = 0; i < uv_idx+1; i++) {
-    	if (uviFlash_idx > UV_FLASH_IDX_STOP) {
+    for (int i = 0; i < uvi_idx+1; i++) {
+    	if (uviFlash_idx > UVI_FLASH_IDX_STOP) {
     		overflow = 1;
     		break;
     	}
