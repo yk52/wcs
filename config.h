@@ -9,8 +9,7 @@
 
 #define FLASH_SIZE			4000000 // 4 MB
 #define VALUES_SET_ADDR			0
-#define CO2_THRESH_ADDR_LO		1
-#define CO2_THRESH_ADDR_HI		1
+#define CO2_THRESH_ADDR			1
 #define UVI_DUR_THRESH_ADDR		2
 #define UVI_THRESH_ADDR			3
 #define VOC_THRESH_ADDR			3
@@ -19,10 +18,20 @@
 #define STEP_GOAL_ADDR_HI		6
 
 // Store current FLASH storage index before going to sleep and every 150 min
-#define CO2_FLASH_IDX_ADDR
-#define VOC_FLASH__IDX_ADDR
-#define UVI_FLASH__IDX_ADDR
-#define TEMP_FLASH__IDX_ADDR
+#define CO2_FLASH_IDX_ADDR		101
+#define VOC_FLASH__IDX_ADDR		501
+#define UVI_FLASH__IDX_ADDR		1001
+#define TEMP_FLASH__IDX_ADDR	15001
+
+#define CO2_FLASH_IDX_START		101
+#define CO2_FLASH_IDX_STOP		500
+#define VOC_FLASH_IDX_START		501
+#define VOC_FLASH_IDX_STOP		1000
+#define UVI_FLASH_IDX_START		1001
+#define UVI_FLASH_IDX_STOP		1500
+#define TEMP_FLASH_IDX_START	1501
+#define TEMP_FLASH_IDX_STOP		2000
+
 
 #define STEP_ADDR
 

@@ -16,25 +16,34 @@ class Values {
 		//constructors
 		Values(void) {
 			EEPROM.begin(FLASH_SIZE);
-			if (EEPROM.read(VALUES_SET_ADDR) != 1) {
+			uint8_t thresholdsSet = EEPROM.read(VALUES_SET_ADDR);
+			if (thresholdsSet != 1) {
 				// Values initiated flag
 				EEPROM.write(VALUES_SET_ADDR, 1);
 				// Set thresholds
+				EEPROM.write(CO2_THRESH_ADDR, 14); // 14 (*100) = 1400
+				co2Thresh = 1400;
 				EEPROM.write(VOC_THRESH_ADDR, 1);
+				vocThresh = 1;
 				EEPROM.write(UVI_THRESH_ADDR, 8);
+				uviThresh = 8;
 				EEPROM.write(UVI_DUR_THRESH_ADDR, 10);
+				uviDurationThresh = 10;
 				EEPROM.write(TEMP_THRESH_ADDR, 30);
-				EEPROM.write(CO2_THRESH_ADDR_HI, 0x05); // 0x0578 = 1400
-				EEPROM.write(CO2_THRESH_ADDR_LO, 0x78);
+				tempThresh = 30;
 				EEPROM.write(STEP_GOAL_ADDR_HI, 0x27); // 0x2710 = 10000
 				EEPROM.write(STEP_GOAL_ADDR_LO, 0x10);
-				// Set Flash storage indices
-				EEPROM.write(CO2_FLASH__IDX_ADDR, 0);
-				EEPROM.write(VOC_FLASH__IDX_ADDR, 0);
-				EEPROM.write(UVI_FLASH__IDX_ADDR, 0);
-				EEPROM.write(TEMP_FLASH__IDX_ADDR, 0);
+				stepGoal = 10000;
+				// Set Flash storage indices TODO
+				EEPROM.write(CO2_FLASH_IDX_ADDR, CO2_FLASH_IDX_START);
+				EEPROM.write(VOC_FLASH_IDX_ADDR, VOC_FLASH_IDX_START);
+				EEPROM.write(UVI_FLASH_IDX_ADDR, UVI_FLASH_IDX_START);
+				EEPROM.write(TEMP_FLASH_IDX_ADDR, TEMP_FLASH_IDX_START);
 
 				EEPROM.commit();
+			}
+			else if (thresholdsSet == 1) {
+
 			}
 		};
 		~Values(void) {};

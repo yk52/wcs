@@ -19,22 +19,57 @@ uint8_t uviDuration = 0;
 uint16_t warn_idx = 0;
 bool warningOverflow = 0;
 
+// Get Thresholds...
+uint16_t getCO2Thresh(void) {
+	uint8_t val = EEPROM.read(CO2_THRESH_ADDR);
+	uint16_t thresh = val*100;
+	return thresh;
+}
+
+uint16_t getVOCThresh(void) {
+	uint16_t thresh = EEPROM.read(VOC_THRESH_ADDR);
+	return thresh;
+}
+
+uint8_t getTempThresh(void) {
+	uint8_t thresh = EEPROM.read(TEMP_THRESH_ADDR);
+	return thresh;
+}
+
+uint16_t getStepGoal(void) {
+	uint8_t LO = EEPROM.read(STEP_GOAL_ADDR_LO);
+	uint16_t HI = EEPROM.read(STEP_GOAL_ADDR_HI);
+	uint16_t goal = (HI << 8) || LO;
+	return stepGoal;
+}
+
+uint8_t getUVIThresh(void) {
+	return EEPROM.read(UVI_THRESH_ADDR);
+}
+
+uint8_t getUVIDurationThresh(void) {
+	return EEPROM.read(UVI_DUR_THRESH_ADDR);
+}
+
+// ...and most recent values
+uint16_t getLastCO2(void);
+uint16_t getLastVOC(void);
+float getLastTemp(void);
+uint16_t getLastStep(void);
+uint8_t getLastUVI(void);
+uint8_t getLastUVIDuration(void);
 
 void Values::setCO2Thresh(uint16_t val) {
-	uint8_t oldLo = EEPROM.read(CO2_THRESH_ADDR_LO);
-	uint16_t oldHi = EEPROM.read(CO2_THRESH_ADDR_HI);
-	uint16_t oldVal = (HI << 8) || LO;
+	uint16_t oldVal = getCO2Thresh();
 	if (oldVal != val) {
-		uint8_t newLo = val && 0xFF;
-		uint8_t newHi = (val >> 8) && 0xFF;
-		EEPROM.write(CO2_THRESH_ADDR_LO, newLo);
-		EEPROM.write(CO2_THRESH_ADDR_HI, newHi);
+		uint8_t byte = val/100;
+		EEPROM.write(CO2_THRESH_ADDR, byte);
 	}
 }
 
 // check that maximum val <= 255 in application!
 void Values::setVOCThresh(uint16_t val) {
-	uint16_t oldVal = EEPROM.read(VOC_THRESH_ADDR);
+	uint16_t oldVal = getVOCThresh();
 	if (oldVal != val) {
 		val = (uint8_t) val
 		EEPROM.write(VOC_THRESH_ADDR, val);
@@ -75,6 +110,18 @@ void Values::setUVIDurationThresh(uint8_t val) {
 }
 
 void Values::storeCO2(uint16_t val) {
+	if (co2_idx == 15) {
+		uint8_t flash_idx = EEPROM.read(CO2_FLASH_IDX_ADDR);
+		EEPROM.write(CO2_FLASH_IDX_ADDR, flash_idx + 15);
+
+		uint8_t ram_idx = 0;
+		for (int i = flash_idx; i<i+15; i++)
+		{
+			uint16_t co2Val = co2[ram_idx]
+			EEPROM.write(i, )
+			ram_idx++;
+		}
+	}
 	co2[co2_idx++] = val;
 	if (val >= co2Thresh) {
 		// Do something, Light LED or what else
@@ -113,46 +160,7 @@ void Values::storeUVI(uint8_t val) {
 	}
 }
 
-// Get Thresholds...
-uint16_t getCO2Thresh(void) {
-	uint8_t LO = EEPROM.read(CO2_THRESH_ADDR_LO);
-	uint16_t HI = EEPROM.read(CO2_THRESH_ADDR_HI);
-	uint16_t thresh = (HI << 8) || LO;
-	return thresh;
-}
 
-uint16_t getVOCThresh(void) {
-	uint16_t thresh = EEPROM.read(VOC_THRESH_ADDR);
-	return thresh;
-}
-
-uint8_t getTempThresh(void) {
-	float thresh = (float)EEPROM.read(TEMP_THRESH_ADDR);
-	return thresh;
-}
-
-uint16_t getStepGoal(void) {
-	uint8_t LO = EEPROM.read(STEP_GOAL_ADDR_LO);
-	uint16_t HI = EEPROM.read(STEP_GOAL_ADDR_HI);
-	uint16_t goal = (HI << 8) || LO;
-	return goal;
-}
-
-uint8_t getUVIThresh(void) {
-	return EEPROM.read(UVI_THRESH_ADDR);
-}
-
-uint8_t getUVIDurationThresh(void) {
-	return EEPROM.read(UVI_DUR_THRESH_ADDR);
-}
-
-// ...and most recent values
-uint16_t getLastCO2(void);
-uint16_t getLastVOC(void);
-float getLastTemp(void);
-uint16_t getLastStep(void);
-uint8_t getLastUVI(void);
-uint8_t getLastUVIDuration(void);
 
 // TODO
 void Values::processMessage(string rxValue) {
