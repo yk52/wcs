@@ -14,12 +14,13 @@
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
 
-uint8_t state = LIGHT_SLEEP;
+uint8_t state = DEEP_SLEEP;
 
 BluetoothSerial SerialBT;
 // BLE_wcs ble;
 
 Timer timer;
+// By creating values object, the thresholds are automatically set.
 Values values;
 
 Adafruit_CCS811 ccs;
@@ -37,6 +38,7 @@ bool firstBooted = 1;
 
 // Timers
 uint32_t ms = 0;
+uint32_t lastEmptied = 0;
 uint32_t pedoTimeout = 0;
 uint32_t uvTimeout = 0;
 uint32_t airTimeout = 0;
@@ -63,6 +65,7 @@ void loop() {
   if (state == SENSORS_ACTIVE) {
     /*  Values.check();
     if (valueWarning) {
+    Check bitmask basically
       valueWarning = 0;
     }
     */
@@ -130,11 +133,18 @@ void loop() {
       showTimeout += 1000;
 
     }
+    if ((ms - lastEmptied) > STORE_TO_FLASH_AFTER_MS) {
+      lastEmptied = ms;
+      values.storeRAMToFlash();
+    }
   }
   else if (state == ONLY_BT) {
     
   }
-  else if (state == LIGHT_SLEEP) {
+  else if (state == DEEP_SLEEP) {
+    if (values.co2_idx >= 6) {
+      values.storeRAMToFlash();
+    }
     goSleep();
   }
 
@@ -150,12 +160,13 @@ void goSleep() {
   Serial.println("Enter sleep");
   detachInterrupt(digitalPinToInterrupt(BUTTON_PIN));
   delay(2000);
-  // esp_sleep_enable_ext0_wakeup(GPIO_NUM_27, 1); // for deep sleep
+  // TODO: Take necessary measures (like storing remaining data into flash, reset steps etc etc)
+
   // TODO Add Bluetooth button later
+  // TODO change Interrupt level if necessary
   gpio_wakeup_enable(GPIO_NUM_27, GPIO_INTR_HIGH_LEVEL);
-  // gpio_wakeup_enable(GPIO_NUM_blabla, GPIO_INTR_HIGH_LEVEL);
   esp_sleep_enable_gpio_wakeup();
-  esp_light_sleep_start();
+  esp_DEEP_SLEEP_start();
   wakeUp();
 }
 
@@ -185,8 +196,7 @@ void buttonISR() {
     led.toggle();
 
     if (state == SENSORS_ACTIVE) {
-      // esp_bt_controller_disable() ??
-      state = LIGHT_SLEEP;
+      state = DEEP_SLEEP;
     }
   }
 }

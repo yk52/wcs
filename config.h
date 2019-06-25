@@ -17,11 +17,21 @@
 #define STEP_GOAL_ADDR_LO		5
 #define STEP_GOAL_ADDR_HI		6
 
+#define WAKEUP_HOUR_ADDR
+#define WAKEUP_MIN_ADDR
+
 // Store current FLASH storage index before going to sleep and every 150 min
-#define CO2_FLASH_IDX_ADDR		101
-#define VOC_FLASH__IDX_ADDR		501
-#define UVI_FLASH__IDX_ADDR		1001
-#define TEMP_FLASH__IDX_ADDR	15001
+// 2 Bytes necessary because index <= 1000
+#define STEPS_FLASH_ADDR_LO 90
+#define STEPS_FLASH_ADDR_HI 91
+#define CO2_FLASH_IDX_ADDR_LO		92
+#define CO2_FLASH_IDX_ADDR_HI		93
+#define VOC_FLASH_IDX_ADDR_LO		94
+#define VOC_FLASH_IDX_ADDR_HI		95
+#define UVI_FLASH_IDX_ADDR_LO		96
+#define UVI_FLASH_IDX_ADDR_HI		97
+#define TEMP_FLASH_IDX_ADDR_LO		98
+#define TEMP_FLASH_IDX_ADDR_HI		99
 
 #define CO2_FLASH_IDX_START		101
 #define CO2_FLASH_IDX_STOP		500
@@ -32,9 +42,14 @@
 #define TEMP_FLASH_IDX_START	1501
 #define TEMP_FLASH_IDX_STOP		2000
 
+#define STORE_TO_FLASH_AFTER_MS	8400000	// 150 min
 
-#define STEP_ADDR
-
+// Threshold durations for different skin types (min)
+#define SKIN_TYPE_1				10
+#define SKIN_TYPE_2				20
+#define SKIN_TYPE_3				30
+#define SKIN_TYPE_4				50	// actually >30
+#define SKIN_TYPE_5				90	// actually >90
 
 
 
@@ -48,7 +63,6 @@
 #define LEDRED_PIN			15
 #define BUTTON_PIN			27
 #define BT_PIN				12
-#define INTERRUPT_LVL		1
 
 #define SENSORS_EN_PIN		12
 
