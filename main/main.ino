@@ -56,6 +56,7 @@ void setup() {
   }
   Wire.begin(SDA_PIN, SCL_PIN);
   pinMode(BUTTON_PIN, INPUT);
+  values.init();
   // SerialBT.begin("Yumi"); // TODO
 }
 

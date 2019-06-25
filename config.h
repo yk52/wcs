@@ -7,7 +7,7 @@
 
 #define BAUDRATE			9600
 
-#define FLASH_SIZE			4000000 // 4 MB
+#define FLASH_SIZE			2000000 // 4 MB
 #define VALUES_SET_ADDR			0
 #define CO2_THRESH_ADDR			1
 #define UVI_DUR_THRESH_ADDR		2
