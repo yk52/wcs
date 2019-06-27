@@ -7,7 +7,7 @@
 
 #define BAUDRATE			9600
 
-#define FLASH_SIZE			2000000 // 4 MB
+#define FLASH_SIZE			3000000 // 3 MB
 #define VALUES_SET_ADDR			0
 #define CO2_THRESH_ADDR			1
 #define UVI_DUR_THRESH_ADDR		2
@@ -52,17 +52,13 @@
 #define SKIN_TYPE_5				90	// actually >90
 
 
-
-
-//
-
-
-
-// Currently arbitary numbers.
-#define	VIBRATION_PIN		19
-#define LEDRED_PIN			15
-#define BUTTON_PIN			27
-#define BT_PIN				12
+// Pins as in WCS_Version5
+#define	VIBRATION_PIN		17
+#define LEDBLUE_PIN			26	// Bluetooth
+#define	LEDGREEN_PIN		27	// Power
+#define LEDRED_PIN			14	// Warning
+#define BUTTON_PIN			4
+#define BLUETOOTH_PIN		2
 
 #define SENSORS_EN_PIN		12
 

@@ -33,7 +33,7 @@ InterfaceOut led(LEDRED_PIN);
 bool error = 0;
 uint8_t interruptFlag = 0;
 uint32_t debounceTimer = 0;
-bool valueWarning = 0;
+int warningCounter = 0;
 bool firstBooted = 1;
 
 // Timers
@@ -64,10 +64,9 @@ void loop() {
   ms = timer.getMillis();
   
   if (state == SENSORS_ACTIVE) {
-    /*  Values.check();
-    if (valueWarning) {
-    Check bitmask basically
-      valueWarning = 0;
+    /*
+    if (warning) {
+      handleWarning();
     }
     */
     
@@ -241,4 +240,11 @@ void sensorsInit() {
   float t = ccs.calculateTemperature();
   ccs.setTempOffset(t - 25.0);
   pedo.calibrate();
+}
+
+void handleWarning() {
+  if (warningCounter == 0) {
+    warningCounter++;
+    
+  }
 }
