@@ -28,7 +28,10 @@ Adafruit_VEML6075 uv = Adafruit_VEML6075();
 Adafruit_ADXL335 pedo;
 
 InterfaceOut vib(VIBRATION_PIN);
-InterfaceOut led(LEDRED_PIN);
+InterfaceOut ledRed(LEDRED_PIN);
+InterfaceOut ledGreen(LEDGREEN_PIN);
+InterfaceOut ledBlue(LEDBLUE_PIN);
+InterfaceOut sensors(SENSORS_EN_PIN); // auf high schalten?
 
 bool error = 0;
 uint8_t interruptFlag = 0;

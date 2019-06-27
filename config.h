@@ -60,10 +60,12 @@
 #define BUTTON_PIN			4
 #define BLUETOOTH_PIN		2
 
-#define SENSORS_EN_PIN		12
+#define SENSORS_EN_PIN		13
+#define GAS_SENSOR_RST_PIN	23
+#define GAS_SENSOR_INT_PIN	16
 
-#define SDA_PIN				4
-#define SCL_PIN				16
+#define SDA_PIN				18
+#define SCL_PIN				19
 
 
 // Frequencies
@@ -79,9 +81,9 @@
 #define WARNING_STORAGE_SIZE 50
 
 // Pedometer
-#define X_PIN 				32
-#define Y_PIN 				34
-#define Z_PIN 				35
+#define X_PIN 				34
+#define Y_PIN 				35
+#define Z_PIN 				32
 #define PEDO_CALIBRATION_SAMPLE_SIZE 40
 #define PEDO_SAMPLE_SIZE 		15
 #define ACCL				85000
