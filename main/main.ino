@@ -1,21 +1,43 @@
 
-//#include <Arduino.h>
 
-#include <Adafruit_CCS811.h>
+
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
 #include <BLE_wcs.h>
-#include <Testbib.h>
+#include <stdio.h>
 
-
-
-Testbib bib;
-Adafruit_CCS811 ada;
 BLE_wcs ble;
+Values values;
 
 void setup() {
-  ble.init_server();
+  Serial.begin(115200);
+  ble.init("Vitameter joey");
 }
 
 void loop() {
+  if (bleButton) {
+    ble.init("Vitameter joey");
+  }
 
+  if (!bleButton) {
+    ble.deinit();
+  }
+  /* 
+   *  if a ble message from phone is received, process the message with values.processMessage
+   *  Depending on return: set thresholds, get thresholds, send data, ...
+   */
+  if (ble.messageReceived()) {
+    std::string txValue = values.processMessage(ble.getMessage());
+    if (txValue.compare("DataRequest")) {         
+      ble.deinit();                                                 // deinit BLE
+      SerialBT.begin("Vitameter");
+      SerialBT.print(data_package);
+    }
+    ble.write(txValue); 
+    ble.messageReceived = false;
+  }
+  
 
 }

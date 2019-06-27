@@ -26,18 +26,14 @@ class BLE_wcs {
 		
 		// member functions
 		void init(std::string deviceName);
-		void init_server(void);
-		void init_client(void);
-		void setParameter();
-		std::string getProperty();
-		std::string getValue();
+
+		void write(std::string txValue);
 		
 	private:
-		// member variables
-		int m_Skintype;
-		int m_UVtreshold;
-		int m_AQthreshold;
-		bool dataRequest;
+		
+		
+		
+		
 
 };
 

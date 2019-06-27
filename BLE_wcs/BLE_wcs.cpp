@@ -1,49 +1,15 @@
-/*
-    Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleServer.cpp
-    Ported to Arduino ESP32 by Evandro Copercini
-    updates by chegewara
-*/
-
 #include "C:\Users\Joanna\Documents\MasterESE\3-Semester\WCS\wcs\BLE_wcs\BLE_wcs.h"
-
-
-
-
-/*
-    Video: https://www.youtube.com/watch?v=oCMOYS71NIU
-    Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
-    Ported to Arduino ESP32 by Evandro Copercini
-
-   Create a BLE server that, once we receive a connection, will send periodic notifications.
-   The service advertises itself as: 6E400001-B5A3-F393-E0A9-E50E24DCCA9E
-   Has a characteristic of: 6E400002-B5A3-F393-E0A9-E50E24DCCA9E - used for receiving data with "WRITE" 
-   Has a characteristic of: 6E400003-B5A3-F393-E0A9-E50E24DCCA9E - used to send data with  "NOTIFY"
-
-   The design of creating the BLE server is:
-   1. Create a BLE Server
-   2. Create a BLE Service
-   3. Create a BLE Characteristic on the Service
-   4. Create a BLE Descriptor on the characteristic
-   5. Start the service.
-   6. Start advertising.
-
-   In this example rxValue is the data received (only accessible inside that function).
-   And txValue is the data to be sent, in this example just a byte incremented every second. 
-*/
-
 
 
 BLECharacteristic *pCharacteristic;
 bool deviceConnected = false;
-
-
-std::string property = "default";
-std::string value = "default";
 bool messageReceived = false;
 
-	std::string rxValue; 									//  global variable with received data
+std::string rxValue; 									//  global variable with received data
 
-
+/*********************************************************************************
+*								server callback class
+*********************************************************************************/
 class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
 		deviceConnected = true;
@@ -54,6 +20,9 @@ class MyServerCallbacks: public BLEServerCallbacks {
     }
 };
 
+/*********************************************************************************
+*									callback class
+*********************************************************************************/
 class MyCallbacks: public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic *pCharacteristic) {
@@ -64,14 +33,24 @@ class MyCallbacks: public BLECharacteristicCallbacks {
     }
 };
 
-bool BLE_wcs::getMessageReceived() {
+/*********************************************************************************
+*									BLE functions
+*********************************************************************************/
+
+/*bool BLE_wcs::getMessageReceived() {
 	return messageReceived;
 }
 
 void BLE_wcs::setMessageReceived(bool received) {
 	messageReceived = received;
+}*/
+
+// getter for received message
+std::string BLE_wcs::getMessage() {
+	return rxValue;
 }
 
+// init function for ble
 void BLE_wcs::init(std::string deviceName)
 {
 	// Create the BLE Device
@@ -108,78 +87,9 @@ void BLE_wcs::init(std::string deviceName)
 	pServer->getAdvertising()->start();
 }
 
-void BLE_wcs::processMessage() {
-	if (rxValue.find(":") != -1) {
-		size_t cut = rxValue.find(":");
-			  
-	    std::string parameter = rxValue.substr(0, cut);
-		std::string sValue = rxValue.substr(cut, -1);
-		int value = atoi(sValue);
-	
-		if (parameter.compare("Skintype")) {
-			m_Skintype = value;
-		} else if (parameter.compare("UVthreshold")) {
-			m_UVthreshold = value;
-		} else if (parameter.compare("AQthreshold")) {
-			m_AQthreshold = value;
-			
-	} else if (rxValue.find("DataRequest") != -1) {
-		// init serial bluetooth
-	} else if (rxValue.find("get") != -1) {
-		char txString[20] = "AQthreshold: " + std::to_string(AQthreshold);
-		pCharacteristic->setValue(txString);
-		pCharacteristic->notify(); 						// Send the value
-	}
+
+
+void BLE::write(char * txValue) {
+	pCharacteristic->setValue(txString);
+	pCharacteristic->notify();
 }
-	
-
-
-void loop() {
-  if (deviceConnected) {
-    char txString[16] = "UV1000AQ100";
-    pCharacteristic->setValue(txString);
-    
-    pCharacteristic->notify(); // Send the value to the app!
-    Serial.print("*** Sent Value: ");
-    Serial.print(txString);
-    Serial.println(" ***");
-
-  }
-  delay(1000);
-}
-
-
-
-
-
-
-
-void BLE_wcs::init_server(void)
-{
-	/* Create Service and a separate Characteristic for each Sensor */
-	BLEDevice::init("Vitameter");
-	BLEServer *pServer = BLEDevice::createServer();
-	BLEService *pService = pServer->createService(SERVICE_UUID);
-	BLECharacteristic *pCharacteristic = pService->createCharacteristic(
-											 CHARACTERISTIC_UUID,
-											 BLECharacteristic::PROPERTY_READ |
-											 BLECharacteristic::PROPERTY_WRITE
-										   );
-
-	pCharacteristic->setValue("Hello World says Team Vita");
-	pService->start();
-	// BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
-	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-	pAdvertising->addServiceUUID(SERVICE_UUID);
-	pAdvertising->setScanResponse(true);
-	pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
-	pAdvertising->setMinPreferred(0x12);
-	BLEDevice::startAdvertising();
-}
-
-void BLE_wcs::init_client()
-{
-
-
-}
-
