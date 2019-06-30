@@ -1,4 +1,4 @@
-#include "C:\Users\Yumi\Desktop\wcs\Values\Values.h"
+#include "C:\Users\Joanna\Documents\MasterESE\3-Semester\WCS\wcs\Values\Values.h"
 
 
 /**************************************************************************/
@@ -6,6 +6,14 @@
 	Organize, store and check sensor values.
 */
 /**************************************************************************/
+
+uint16_t testThresh = 15;
+size_t cut = 1;	  
+std::string parameter = "default parameter";
+//std::string stdStringValue = "";
+//char cStringValue[8];				// first convert to c-string size ???
+//char Str3[8] = {'a', 'r', 'd', 'u', 'i', 'n', 'o', '\0'};
+//uint16_t value = 1;						// then cast to int
 
 
 // SRAM storage index
@@ -424,79 +432,137 @@ bool Values::storeRAMToFlash(void) {
     }
 }
 
+std::string Values::getParameterAsString(uint16_t parameter) {
+	char buffer[10]; 
+	sprintf(buffer, "%d", parameter);
+	std::string stdString(buffer);
+	return stdString;
+}
 
+int Values::stdStringToInt(std::string stdString) {
+	char array[stdString.length() + 1];
+	size_t i;
+    for (i = 0; i < stdString.length(); i++) {
+        array[i] = stdString[i];
+    } 
+    array[stdString.length()] = '\0';
+	int y = atoi(array);
+	return y;
+}	
+	
+int Values::toCint(std::string stdString) {
+	const char * cString = stdString.c_str();
+	Serial.print("here c-string: ");
+	Serial.println(cString);
+	int y = atoi(cString);
+	Serial.print("here y: ");
+	Serial.println(y);	
+	return y;
+}
+
+void Values::setValue(int i) {
+	_value = i;
+}
 
 // TODO
- int Values::processMessage(std::string rxValue) {
-	
+ std::string Values::processMessage(std::string rxValue) {
+/*  das funktioniert!
 	if (rxValue.find(":") != -1) {
-		size_t cut = rxValue.find(":");
-			  
-	    std::string parameter = rxValue.substr(0, cut);
-		std::string sValue = rxValue.substr(cut, -1);
-		uint16_t value = stoi(sValue);
+		cut = rxValue.find(":");	  
+	    parameter = rxValue.substr(0, cut);
+		_stdStringValue = rxValue.substr(cut+1, -1);
+		int i = Values::stdStringToInt(_stdStringValue);		
+		Values::setValue(i);
+	}
+	return "test";*/
+	if (rxValue.find(":") != -1) {
+		cut = rxValue.find(":");	  
+	    parameter = rxValue.substr(0, cut);
+		_stdStringValue = rxValue.substr(cut+1, -1);
+		
+		const char * cStringValue = _stdStringValue.c_str();
+		int i = atoi(cStringValue);						// then cast to int
+		Serial.print("here std string: ");
+		Serial.println(_stdStringValue.c_str());
+		Serial.print("here i: ");
+		Serial.println(i);
+		
+		Values::setValue(i);
+	}
+	return "test";
+	/*if (rxValue.find(":") != -1) {
+		cut = rxValue.find(":");	  
+	    parameter = rxValue.substr(0, cut);
+		stdStringValue = rxValue.substr(cut, -1);
+		
+		const char * cStringValue = stdStringValue.c_str();
+		//char cStringValue[3] = {'2', '3', '\0'};				// stdStringValue.c_str();				// first convert to c-string
+		value = atoi(cStringValue);						// then cast to int
 		
 		/*********************************************************************************
 		*									setters
-		*********************************************************************************/
+		*********************************************************************************
 
-		if (parameter.compare("setCo2Thresh")) {
+		if (parameter.compare("test")) {
+			testThresh = value;
+			return "test";
+		} else if (parameter.compare("setCo2Thresh")) {
 			setCO2Thresh(value);
 			return "set";
 		} else if (parameter.compare("setVocThresh")) {
-			setCO2Thresh(value);
+			setVOCThresh(value);
 			return "set";
 			vocThresh = value;
 		} else if (parameter.compare("setTempThresh")) {
 			setTempThresh(value);
 			return "set";
 		} else if (parameter.compare("setUviThresh")) {
-			setUviThresh(value);
+			setUVIThresh(value);
 			return "set";
-		} else if (parameter.compare("setUviDurationThresh") {
-			setUviDurationThresh(value);
+		} else if (parameter.compare("setUviDurationThresh")) {
+			setUVIDurationThresh(value);
 			return "set";
-		} else if (parameter.compare("setUviDuration") {
-			setUviDuratio(value);
-			return "set";
-		} else if (parameter.compare("setStepGoal") {
+		//} else if (parameter.compare("setUviDuration")) {			existiert wohl nicht
+			//setUVIDuration(value);
+			//return "set";
+		} else if (parameter.compare("setStepGoal")) {
 			setStepGoal(value);
 			return "set";
-		} else if (parameter.compare("setSunsreenFactor") {
+		} else if (parameter.compare("setSunsreenFactor")) {
 			// Todo: setSunsreenFactor(value);
 			return "set";
-		}
-		
-
 		
 		/*********************************************************************************
 		*									getters
-		*********************************************************************************/
+		*********************************************************************************   
+		
+		} else if (parameter.compare("getTest")) {
+			return getParameterAsString(testThresh);	
 		} else if (parameter.compare("getCo2Thresh")) {
-			return std::to_string(co2Thresh);
+			return getParameterAsString(co2Thresh);
 		} else if (parameter.compare("getVocThresh")) {
 			return std::to_string(vocThresh);
 		} else if (parameter.compare("getTempThresh")) {
 			return std::to_string(tempThresh);
 		} else if (parameter.compare("getUviThresh")) {
 			return std::to_string(uviThresh);
-		} else if (parameter.compare("getUviDurationThresh") {
+		} else if (parameter.compare("getUviDurationThresh")) {
 			return std::to_string(uviDurationThresh);
-		} else if (parameter.compare("getUviDuration") {
+		} else if (parameter.compare("getUviDuration")) {
 			return std::to_string(uviDuration);
-		} else if (parameter.compare("getStepGoal") {
+		} else if (parameter.compare("getStepGoal")) {
 			return std::to_string(stepGoal);
-		} else if (parameter.compare("getSunscreenFactor") {
+		} else if (parameter.compare("getSunscreenFactor")) {
 			// Todo
 			return std::to_string(3);
 		}
 	
 	/*********************************************************************************
 	*									data request
-	 **********************************************************************************/
+	 **********************************************************************************
 	} else if (rxValue.find("Data request") != -1) {
 		return "DataRequest";
-	}  else {
-			// error message
-	}
+	} else {
+		return "no valid command";
+	}*/
 }

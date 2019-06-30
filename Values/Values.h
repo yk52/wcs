@@ -3,12 +3,13 @@
 
 #include "Arduino.h"
 
-// #include "WProgram.h"
 
-#include "C:\Users\Yumi\Desktop\wcs\config.h"
+#include "C:\Users\Joanna\Documents\MasterESE\3-Semester\WCS\wcs\Config\config.h"
 #include <EEPROM.h>
 #include <stdio.h>
 using namespace std;
+#include <string>
+#include <iostream>
 
 
 class Values {
@@ -18,6 +19,7 @@ class Values {
 		~Values(void) {};
 
 		// Default thresholds
+		uint16_t testThresh;
 		uint16_t co2Thresh;
 		uint8_t vocThresh;
 		uint8_t tempThresh;
@@ -115,9 +117,20 @@ class Values {
 		// take the message sent from the phone and triggers respective functions, sets
 		// tresholds, gets values, etc. 
 		// Format must be: "setCo2Threshold:4"
-		void processMessage(std::string rxValue);
-
+		std::string processMessage(std::string);
 		
+		std::string getParameterAsString(uint16_t);
+		int stdStringToInt(std::string);
+		int toCint(std::string);
+		
+		void setValue(int);
+		// global var for debug
+		size_t cut;	  
+	    std::string parameter;
+		std::string _stdStringValue;
+		//const char * cStringValue;
+		int _value;
+
 
 
 	private:
