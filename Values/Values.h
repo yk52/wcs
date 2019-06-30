@@ -118,17 +118,11 @@ class Values {
 		// tresholds, gets values, etc. 
 		// Format must be: "setCo2Threshold:4"
 		std::string processMessage(std::string);
-		
 		std::string getParameterAsString(uint16_t);
-		int stdStringToInt(std::string);
-		int toCint(std::string);
 		
-		void setValue(int);
 		// global var for debug
-
 	    std::string parameter;
 		std::string _stdStringValue;
-
 		int _value;
 
 

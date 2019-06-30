@@ -7,13 +7,10 @@
 */
 /**************************************************************************/
 
-uint16_t testThresh = 15;
+uint16_t testThresh = 15;						// todo: delete after debug is over
 size_t cut = 1;	  
 std::string parameter = "default parameter";
-//std::string stdStringValue = "";
-//char cStringValue[8];				// first convert to c-string size ???
-//char Str3[8] = {'a', 'r', 'd', 'u', 'i', 'n', 'o', '\0'};
-//uint16_t value = 1;						// then cast to int
+
 
 
 // SRAM storage index
@@ -439,102 +436,78 @@ std::string Values::getParameterAsString(uint16_t parameter) {
 	return stdString;
 }
 
-int Values::stdStringToInt(std::string stdString) {
-	char array[stdString.length() + 1];
-	size_t i;
-    for (i = 0; i < stdString.length(); i++) {
-        array[i] = stdString[i];
-    } 
-    array[stdString.length()] = '\0';
-	int y = atoi(array);
-	return y;
-}	
-	
-int Values::toCint(std::string stdString) {
-	const char * cString = stdString.c_str();
-	Serial.print("here c-string: ");
-	Serial.println(cString);
-	int y = atoi(cString);
-	Serial.print("here y: ");
-	Serial.println(y);	
-	return y;
-}
 
-void Values::setValue(int i) {
-	_value = i;
-}
 
-// TODO
  std::string Values::processMessage(std::string rxValue) {
-
-	if (rxValue.find(":") != -1) {
+	/*********************************************************************************
+	*									setters
+	*********************************************************************************/
+	if (rxValue.find("set") != -1) {
 		cut = rxValue.find(":");	  
 	    parameter = rxValue.substr(0, cut);
 		_stdStringValue = rxValue.substr(cut+1, -1);	
 		const char * cStringValue = _stdStringValue.c_str();		// first c-string needed, for atoi
-		int value = atoi(cStringValue);		// then cast to int
-		_value = value;
-	
-		
-		/*********************************************************************************
-		*									setters
-		*********************************************************************************/
+		int value = atoi(cStringValue);								// then cast to int
+		_value = value;												// todo: delete global debug vars
 
-		if (parameter.compare("test") == 0) {
+		if (parameter.compare("setTestThresh") == 0) {
 			testThresh = value;
-			Serial.println("parameter == test if");
 			return "test";
-		/*} else if (parameter.compare("setCo2Thresh")) {
+		} else if (parameter.compare("setCo2Thresh") == 0) {
 			setCO2Thresh(value);
-			return "set";
-		} else if (parameter.compare("setVocThresh")) {
+			return "setCo2Thresh";
+		} else if (parameter.compare("setVocThresh") == 0) {
 			setVOCThresh(value);
-			return "set";
+			return "setVocThresh";
 			vocThresh = value;
-		} else if (parameter.compare("setTempThresh")) {
+		} else if (parameter.compare("setTempThresh") == 0) {
 			setTempThresh(value);
-			return "set";
-		} else if (parameter.compare("setUviThresh")) {
+			return "setTempThresh";
+		} else if (parameter.compare("setUviThresh") == 0) {
 			setUVIThresh(value);
-			return "set";
-		} else if (parameter.compare("setUviDurationThresh")) {
+			return "setUviThresh";
+		} else if (parameter.compare("setUviDurationThresh") == 0) {
 			setUVIDurationThresh(value);
 			return "set";
-		//} else if (parameter.compare("setUviDuration")) {			existiert wohl nicht
+		//} else if (parameter.compare("setUviDuration") == 0) {			existiert wohl nicht
 			//setUVIDuration(value);
-			//return "set";
-		} else if (parameter.compare("setStepGoal")) {
+			//return "setUviDuration";
+		} else if (parameter.compare("setStepGoal") == 0) {
 			setStepGoal(value);
-			return "set";
-		} else if (parameter.compare("setSunsreenFactor")) {
+			return "setStepGoal";
+		} else if (parameter.compare("setSunsreenFactor") == 0) {
 			// Todo: setSunsreenFactor(value);
-			return "set";
-		*/
-		/*********************************************************************************
-		*									getters
-		*********************************************************************************/   
-		
-		} else if (parameter.compare("getTest") == 0) {
-			return getParameterAsString(testThresh);	
-		/*} else if (parameter.compare("getCo2Thresh")) {
-			return getParameterAsString(co2Thresh);
-		} else if (parameter.compare("getVocThresh")) {
-			return std::to_string(vocThresh);
-		} else if (parameter.compare("getTempThresh")) {
-			return std::to_string(tempThresh);
-		} else if (parameter.compare("getUviThresh")) {
-			return std::to_string(uviThresh);
-		} else if (parameter.compare("getUviDurationThresh")) {
-			return std::to_string(uviDurationThresh);
-		} else if (parameter.compare("getUviDuration")) {
-			return std::to_string(uviDuration);
-		} else if (parameter.compare("getStepGoal")) {
-			return std::to_string(stepGoal);
-		} else if (parameter.compare("getSunscreenFactor")) {
-			// Todo
-			return std::to_string(3);*/
+			return "todo: setSunsreenFactor";
+		} else {
+			return "invalid setter";
 		}
 	
+	/*********************************************************************************
+	*									getters
+	*********************************************************************************/	
+	} else if (rxValue.find("get") != -1) {   
+		if (rxValue.compare("getTest") == 0) {
+			return getParameterAsString(testThresh);	
+		} else if (rxValue.compare("getCo2Thresh") == 0) {
+			return getParameterAsString(co2Thresh);
+		} else if (rxValue.compare("getVocThresh") == 0) {
+			return getParameterAsString(vocThresh);
+		} else if (rxValue.compare("getTempThresh") == 0) {
+			return getParameterAsString(tempThresh);
+		} else if (rxValue.compare("getUviThresh") == 0) {
+			return getParameterAsString(uviThresh);
+		} else if (rxValue.compare("getUviDurationThresh") == 0) {
+			return getParameterAsString(uviDurationThresh);
+		} else if (rxValue.compare("getUviDuration") == 0) {
+			return getParameterAsString(uviDuration);
+		} else if (rxValue.compare("getStepGoal") == 0) {
+			return getParameterAsString(stepGoal);
+		} else if (rxValue.compare("getSunscreenFactor") == 0) {
+			return "Todo: sunfactor";									// todo
+		} else {
+			return "invalid getter";
+		}
+
 	/*********************************************************************************
 	*									data request
 	 **********************************************************************************/
