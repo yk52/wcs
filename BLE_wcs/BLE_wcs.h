@@ -3,10 +3,10 @@
 
 
 
-#include "C:\Users\Joanna\Documents\MasterESE\3-Semester\WCS\wcs\ESP32_BLE\src\BLEDevice.h"
-#include "C:\Users\Joanna\Documents\MasterESE\3-Semester\WCS\wcs\ESP32_BLE\src\BLEUtils.h"
-#include "C:\Users\Joanna\Documents\MasterESE\3-Semester\WCS\wcs\ESP32_BLE\src\BLEServer.h"
 #include <BLE2902.h>
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
 #include <stdio.h>
 
 
@@ -25,9 +25,12 @@ class BLE_wcs {
 		~BLE_wcs(void) {};
 		
 		// member functions
-		void init(std::string deviceName);
-
-		void write(std::string txValue);
+		std::string getMessage(void);
+		void init(std::string);
+		void write(std::string);
+		
+		// message received flag
+		bool messageReceived;
 		
 	private:
 		

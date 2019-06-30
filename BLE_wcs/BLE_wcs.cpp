@@ -5,7 +5,7 @@ BLECharacteristic *pCharacteristic;
 bool deviceConnected = false;
 bool messageReceived = false;
 
-std::string rxValue; 									//  global variable with received data
+std::string rxValue = "default"; 									//  global variable with received data
 
 /*********************************************************************************
 *								server callback class
@@ -37,13 +37,6 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 *									BLE functions
 *********************************************************************************/
 
-/*bool BLE_wcs::getMessageReceived() {
-	return messageReceived;
-}
-
-void BLE_wcs::setMessageReceived(bool received) {
-	messageReceived = received;
-}*/
 
 // getter for received message
 std::string BLE_wcs::getMessage() {
@@ -89,7 +82,7 @@ void BLE_wcs::init(std::string deviceName)
 
 
 
-void BLE::write(char * txValue) {
-	pCharacteristic->setValue(txString);
+void BLE_wcs::write(std::string txValue) {
+	pCharacteristic->setValue(txValue);
 	pCharacteristic->notify();
 }
