@@ -125,10 +125,10 @@ class Values {
 		
 		void setValue(int);
 		// global var for debug
-		size_t cut;	  
+
 	    std::string parameter;
 		std::string _stdStringValue;
-		//const char * cStringValue;
+
 		int _value;
 
 

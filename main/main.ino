@@ -29,21 +29,21 @@ void loop() {
     Serial.println(sent.c_str());
     processed = values.processMessage(sent);
 
+    Serial.print("processed: ");
+    Serial.println(processed.c_str());
     
     Serial.print("parameter is ");
     Serial.println(values.parameter.c_str());
     
-    Serial.print("stdStringValue is ");
-    Serial.println(values._stdStringValue.c_str());
-    int x = values.stdStringToInt(values._stdStringValue);
-    Serial.print("x is ");
-    Serial.println(x);
-    
-    Serial.print("value is ");
+    Serial.print("_value is ");
     Serial.println(values._value);
+    
+    Serial.print("testThresh is ");
+    Serial.println(values.testThresh);
+    Serial.println("");
+    Serial.println("");
 
-    Serial.println("");
-    Serial.println("");
+    ble.write(processed);
     
     //txValue = values.processMessage(ble.getMessage());
     //if (txValue.compare("DataRequest")) {         

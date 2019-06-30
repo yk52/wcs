@@ -466,47 +466,25 @@ void Values::setValue(int i) {
 
 // TODO
  std::string Values::processMessage(std::string rxValue) {
-/*  das funktioniert!
+
 	if (rxValue.find(":") != -1) {
 		cut = rxValue.find(":");	  
 	    parameter = rxValue.substr(0, cut);
-		_stdStringValue = rxValue.substr(cut+1, -1);
-		int i = Values::stdStringToInt(_stdStringValue);		
-		Values::setValue(i);
-	}
-	return "test";*/
-	if (rxValue.find(":") != -1) {
-		cut = rxValue.find(":");	  
-	    parameter = rxValue.substr(0, cut);
-		_stdStringValue = rxValue.substr(cut+1, -1);
-		
-		const char * cStringValue = _stdStringValue.c_str();
-		int i = atoi(cStringValue);						// then cast to int
-		Serial.print("here std string: ");
-		Serial.println(_stdStringValue.c_str());
-		Serial.print("here i: ");
-		Serial.println(i);
-		
-		Values::setValue(i);
-	}
-	return "test";
-	/*if (rxValue.find(":") != -1) {
-		cut = rxValue.find(":");	  
-	    parameter = rxValue.substr(0, cut);
-		stdStringValue = rxValue.substr(cut, -1);
-		
-		const char * cStringValue = stdStringValue.c_str();
-		//char cStringValue[3] = {'2', '3', '\0'};				// stdStringValue.c_str();				// first convert to c-string
-		value = atoi(cStringValue);						// then cast to int
+		_stdStringValue = rxValue.substr(cut+1, -1);	
+		const char * cStringValue = _stdStringValue.c_str();		// first c-string needed, for atoi
+		int value = atoi(cStringValue);		// then cast to int
+		_value = value;
+	
 		
 		/*********************************************************************************
 		*									setters
-		*********************************************************************************
+		*********************************************************************************/
 
-		if (parameter.compare("test")) {
+		if (parameter.compare("test") == 0) {
 			testThresh = value;
+			Serial.println("parameter == test if");
 			return "test";
-		} else if (parameter.compare("setCo2Thresh")) {
+		/*} else if (parameter.compare("setCo2Thresh")) {
 			setCO2Thresh(value);
 			return "set";
 		} else if (parameter.compare("setVocThresh")) {
@@ -531,14 +509,14 @@ void Values::setValue(int i) {
 		} else if (parameter.compare("setSunsreenFactor")) {
 			// Todo: setSunsreenFactor(value);
 			return "set";
-		
+		*/
 		/*********************************************************************************
 		*									getters
-		*********************************************************************************   
+		*********************************************************************************/   
 		
-		} else if (parameter.compare("getTest")) {
+		} else if (parameter.compare("getTest") == 0) {
 			return getParameterAsString(testThresh);	
-		} else if (parameter.compare("getCo2Thresh")) {
+		/*} else if (parameter.compare("getCo2Thresh")) {
 			return getParameterAsString(co2Thresh);
 		} else if (parameter.compare("getVocThresh")) {
 			return std::to_string(vocThresh);
@@ -554,15 +532,15 @@ void Values::setValue(int i) {
 			return std::to_string(stepGoal);
 		} else if (parameter.compare("getSunscreenFactor")) {
 			// Todo
-			return std::to_string(3);
+			return std::to_string(3);*/
 		}
 	
 	/*********************************************************************************
 	*									data request
-	 **********************************************************************************
+	 **********************************************************************************/
 	} else if (rxValue.find("Data request") != -1) {
 		return "DataRequest";
 	} else {
 		return "no valid command";
-	}*/
+	}
 }
