@@ -3,13 +3,10 @@
 
 
 
-// #include "C:\Users\Yumi\Desktop\wcs\src\BLEDevice.h"
-// #include "C:\Users\Yumi\Desktop\wcs\ESP32_BLE\src\BLEUtils.h"
-// #include "C:\Users\Yumi\Desktop\wcs\ESP32_BLE\src\BLEServer.h"
+#include <BLE2902.h>
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEServer.h>
-#include <BLE2902.h>
 #include <stdio.h>
 
 
@@ -28,21 +25,20 @@ class BLE_wcs {
 		~BLE_wcs(void) {};
 		
 		// member functions
-		void init(std::string deviceName);
-		void init_server(void);
-		void init_client(void);
-		void setParameter();
-		std::string getProperty();
-		std::string getValue();
+		std::string getMessage(void);
+		void init(std::string);
+		void write(std::string);
+
+		// message received flag
+		bool messageReceived;
 		
 	private:
-		// member variables
-		int m_Skintype;
-		int m_UVtreshold;
-		int m_AQthreshold;
-		bool dataRequest;
+
+
+
+
 
 };
 
 
-#endif /* BLE_WCS_H_ */
+#endif /* BLE_wcs_H_ */

@@ -7,6 +7,11 @@
 */
 /**************************************************************************/
 
+uint16_t testThresh = 15;						// todo: delete after debug is over
+size_t cut = 1;
+std::string parameter = "default parameter";
+
+
 
 // SRAM storage index
 uint16_t co2_idx = 0;
@@ -15,7 +20,6 @@ uint16_t uvi_idx = 0;
 uint16_t temp_idx = 0;
 
 uint8_t uviDuration = 0;
-bool pedoEnable = 0;
 
 void Values::init(void) {
 	EEPROM.begin(FLASH_SIZE);
@@ -425,31 +429,91 @@ bool Values::storeRAMToFlash(void) {
     }
 }
 
+std::string Values::getParameterAsString(uint16_t parameter) {
+	char buffer[10];
+	sprintf(buffer, "%d", parameter);
+	std::string stdString(buffer);
+	return stdString;
+}
 
 
-// TODO
-void Values::processMessage(string rxValue) {
-	/*
-	if (rxValue.find(":") != -1) {
-		size_t cut = rxValue.find(":");
 
-	    std::string parameter = rxValue.substr(0, cut);
-		std::string sValue = rxValue.substr(cut, -1);
-		int value = atoi(sValue);
+ std::string Values::processMessage(std::string rxValue) {
+	/*********************************************************************************
+	*									setters
+	*********************************************************************************/
+	if (rxValue.find("set") != -1) {
+		cut = rxValue.find(":");
+	    parameter = rxValue.substr(0, cut);
+		_stdStringValue = rxValue.substr(cut+1, -1);
+		const char * cStringValue = _stdStringValue.c_str();		// first c-string needed, for atoi
+		int value = atoi(cStringValue);								// then cast to int
+		_value = value;												// todo: delete global debug vars
 
-		if (parameter.compare("Skintype")) {
-			m_Skintype = value;
-		} else if (parameter.compare("UVthreshold")) {
-			m_UVthreshold = value;
-		} else if (parameter.compare("AQthreshold")) {
-			m_AQthreshold = value;
+		if (parameter.compare("setTestThresh") == 0) {
+			testThresh = value;
+			return "test";
+		} else if (parameter.compare("setCo2Thresh") == 0) {
+			setCO2Thresh(value);
+			return "setCo2Thresh";
+		} else if (parameter.compare("setVocThresh") == 0) {
+			setVOCThresh(value);
+			return "setVocThresh";
+			vocThresh = value;
+		} else if (parameter.compare("setTempThresh") == 0) {
+			setTempThresh(value);
+			return "setTempThresh";
+		} else if (parameter.compare("setUviThresh") == 0) {
+			setUVIThresh(value);
+			return "setUviThresh";
+		} else if (parameter.compare("setUviDurationThresh") == 0) {
+			setUVIDurationThresh(value);
+			return "set";
+		//} else if (parameter.compare("setUviDuration") == 0) {			existiert wohl nicht
+			//setUVIDuration(value);
+			//return "setUviDuration";
+		} else if (parameter.compare("setStepGoal") == 0) {
+			setStepGoal(value);
+			return "setStepGoal";
+		} else if (parameter.compare("setSunsreenFactor") == 0) {
+			// Todo: setSunsreenFactor(value);
+			return "todo: setSunsreenFactor";
+		} else {
+			return "invalid setter";
+		}
 
-	} else if (rxValue.find("DataRequest") != -1) {
-		// init serial bluetooth
+	/*********************************************************************************
+	*									getters
+	*********************************************************************************/
 	} else if (rxValue.find("get") != -1) {
-		char txString[20] = "AQthreshold: " + std::to_string(AQthreshold);
-		pCharacteristic->setValue(txString);
-		pCharacteristic->notify(); 						// Send the value
+		if (rxValue.compare("getTest") == 0) {
+			return getParameterAsString(testThresh);
+		} else if (rxValue.compare("getCo2Thresh") == 0) {
+			return getParameterAsString(co2Thresh);
+		} else if (rxValue.compare("getVocThresh") == 0) {
+			return getParameterAsString(vocThresh);
+		} else if (rxValue.compare("getTempThresh") == 0) {
+			return getParameterAsString(tempThresh);
+		} else if (rxValue.compare("getUviThresh") == 0) {
+			return getParameterAsString(uviThresh);
+		} else if (rxValue.compare("getUviDurationThresh") == 0) {
+			return getParameterAsString(uviDurationThresh);
+		} else if (rxValue.compare("getUviDuration") == 0) {
+			return getParameterAsString(uviDuration);
+		} else if (rxValue.compare("getStepGoal") == 0) {
+			return getParameterAsString(stepGoal);
+		} else if (rxValue.compare("getSunscreenFactor") == 0) {
+			return "Todo: sunfactor";									// todo
+		} else {
+			return "invalid getter";
+		}
+
+	/*********************************************************************************
+	*									data request
+	 **********************************************************************************/
+	} else if (rxValue.find("Data request") != -1) {
+		return "DataRequest";
+	} else {
+		return "no valid command";
 	}
-	*/
 }

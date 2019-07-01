@@ -9,6 +9,8 @@
 #include <EEPROM.h>
 #include <stdio.h>
 using namespace std;
+#include <string>
+#include <iostream>
 
 
 class Values {
@@ -18,6 +20,7 @@ class Values {
 		~Values(void) {};
 
 		// Default thresholds
+		uint16_t testThresh;
 		uint16_t co2Thresh;
 		uint8_t vocThresh;
 		uint8_t tempThresh;
@@ -25,6 +28,9 @@ class Values {
 		uint8_t uviDurationThresh;
 		uint8_t uviDuration;
 		uint16_t stepGoal;
+
+		// data requested flag
+		bool dataRequested = false;
 
 		// Each bit/flag stands for one warning. Flag is set to 1 if value exceeded.
 		// x | x | CO2 (4)| VOC (3)| TEMP (2)| UVI (1)| STEPS (0)|
@@ -63,7 +69,6 @@ class Values {
 		float temp[TEMP_STORAGE_SIZE] = {0}; // in degrees
 		uint8_t temp_idx;
 		uint16_t steps;
-		bool pedoEnable;
 
 		// Set Threshold values
 		void setCO2Thresh(uint16_t val);
@@ -110,8 +115,16 @@ class Values {
 		void storeUVI(uint8_t);
 		bool storeRAMToFlash(void);
 
-		// String must look like: "UVthreshold:10"
-		void processMessage(string);
+		// take the message sent from the phone and triggers respective functions, sets
+		// tresholds, gets values, etc.
+		// Format must be: "setCo2Threshold:4"
+		std::string processMessage(std::string);
+		std::string getParameterAsString(uint16_t);
+
+		// global var for debug
+	    std::string parameter;
+		std::string _stdStringValue;
+		int _value;
 
 
 
