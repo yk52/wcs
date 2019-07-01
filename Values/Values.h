@@ -70,6 +70,8 @@ class Values {
 		uint8_t temp_idx;
 		uint16_t steps;
 
+		bool pedoEnable;
+
 		// Set Threshold values
 		void setCO2Thresh(uint16_t val);
 		void setVOCThresh(uint8_t val);

@@ -9,7 +9,7 @@
 #include <Adafruit_VEML6075.h>
 #include <Adafruit_ADXL335.h>
 #include <InterfaceOut.h>
-#include <timer.h>
+#include <Timer.h>
 #include <Values.h>
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 

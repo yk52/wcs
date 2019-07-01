@@ -1,4 +1,4 @@
-#include "C:\Users\Yumi\Desktop\wcs\Timer\timer.h"
+#include "C:\Users\Yumi\Desktop\wcs\Timer\Timer.h"
 
 
 /**************************************************************************/
@@ -11,6 +11,7 @@ bool flag = false;
 uint32_t globalBootTime = 0;
 
 void Timer::init(void) {
+	/*
 	rtc_clk_init(slow_freq : 2);
 	rtc_clk_32k_enable_external();
 	rtc_clk_slow_freq_set(1);
@@ -19,6 +20,7 @@ void Timer::init(void) {
 		// TODO
 		while (1) { }
 	}
+	*/
 }
 
 uint64_t Timer::getMillis(void) {
