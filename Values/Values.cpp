@@ -15,6 +15,7 @@ uint16_t uvi_idx = 0;
 uint16_t temp_idx = 0;
 
 uint8_t uviDuration = 0;
+bool pedoEnable = 0;
 
 void Values::init(void) {
 	EEPROM.begin(FLASH_SIZE);

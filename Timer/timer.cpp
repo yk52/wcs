@@ -1,5 +1,5 @@
-#include "C:\Users\Yumi\Desktop\wcs\Timer\Timer.h"
-// include rtc.h?
+#include "C:\Users\Yumi\Desktop\wcs\Timer\timer.h"
+
 
 /**************************************************************************/
 /*! 
@@ -21,16 +21,18 @@ void Timer::init(void) {
 	}
 }
 
-uint32_t Timer::getMillis(void) {
-	float currentTicks = (float) clock();
-	float millis = currentTicks/CLOCKS_PER_SEC*1000;
-	return (uint32_t) millis;
+uint64_t Timer::getMillis(void) {
+	uint64_t currentTicks = rtc_time_get();
+	uint64_t millis = currentTicks/32768*1000;
+	return millis;
 }
 
+/*
 uint32_t Timer::getTicks(void) {
 	clock_t currentTicks = clock();
 	return (uint32_t) currentTicks;
 }
+*/
 
 void Timer::add(void) {
 

@@ -4,17 +4,18 @@
 
 #include <Wire.h>
 #include <BluetoothSerial.h>
-#include <BLE_wcs.h>
+// #include <BLE_wcs.h>
 #include <Adafruit_CCS811.h>
 #include <Adafruit_VEML6075.h>
 #include <Adafruit_ADXL335.h>
 #include <InterfaceOut.h>
-#include <Timer.h>
+#include <timer.h>
 #include <Values.h>
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
 
 uint8_t state = DEEP_SLEEP;
+RTC_DATA_ATTR uint32_t rtcData = 0;
 
 BluetoothSerial SerialBT;
 // BLE_wcs ble;
@@ -37,6 +38,7 @@ bool error = 0;
 uint8_t interruptFlag = 0;
 uint32_t debounceTimer = 0;
 int warningCounter = 0;
+uint32_t minuteCounter = 0;
 bool firstBooted = 1;
 
 // Timers
@@ -60,11 +62,24 @@ void setup() {
   Wire.begin(SDA_PIN, SCL_PIN);
   pinMode(BUTTON_PIN, INPUT);
   values.init();
-  // SerialBT.begin("Yumi"); // TODO
+}
+
+void readGasSensor() {
+  uint16_t c = ccs.geteCO2();
+  uint16_t v = ccs.getTVOC();
+  values.storeCO2(c);
+  values.storeVOC(v);
+  values.storeTemp(ccs.calculateTemperature());
+}
+
+void readUVISensor() {
+  uint8_t u = uv.readUVI();
+  values.storeUVI(u);
 }
 
 void loop() {
-  ms = timer.getMillis();
+  // TODO change to RTC clock
+  ms = millis();
   
   if (state == SENSORS_ACTIVE) {
     /*
@@ -72,77 +87,49 @@ void loop() {
       handleWarning();
     }
     */
+
+    if (!values.pedoEnable) {
+      readUVISensor();
+      if (minuteCounter % 10 == 0) {
+        while (!ccs.available());
+        readGasSensor();
+      }
+      goLightSleepTimeout(60000 - millis() + ms);
+    }
+    else {
+      if ((ms > airTimeout) && ccs.available()) {
+        airTimeout += AQ_FREQ;
+        readGasSensor();
+      }
+      if (ms > uvTimeout) {
+        uvTimeout += UV_FREQ;
+        readUVISensor();
+      }
+      if (ms > pedoTimeout) {
+        uint16_t x = pedo.getPedo();
+        bool goalAchieved = values.storeSteps(x);
+  
+        if (goalAchieved) {
+          // Do some fancy light and Vibration stuff
+        }
+        
+        // Step registered
+        if (pedo.flag) {
+          Serial.println(x);
+          pedoTimeout += WAIT_AFTER_STEP;
+          pedo.flag = 0;
+        }
+        else {
+          pedoTimeout += PEDO_FREQ;
+        }
+      }
+    }
+
     
-    if (ms > pedoTimeout) {
-      uint16_t x = pedo.getPedo();
-      bool goalAchieved = values.storeSteps(x);
-
-      if (goalAchieved) {
-        // Do some fancy light and Vibration stuff
-      }
-      
-      // Step registered
-      if (pedo.flag) {
-        Serial.println(x);
-        pedoTimeout += WAIT_AFTER_STEP;
-        pedo.flag = 0;
-      }
-      else {
-        pedoTimeout += PEDO_FREQ;
-      }
-    }
-
-    if ((ms > airTimeout) && ccs.available()) {
-      airTimeout += AQ_FREQ;
-      if (!ccs.readData()) {
-        uint16_t c = ccs.geteCO2();
-        uint16_t v = ccs.getTVOC();
-        values.storeCO2(c);
-        values.storeVOC(v);
-        values.storeTemp(ccs.calculateTemperature());
-
-      } else {
-        error = 1;
-      }
-    }
-    if (ms > uvTimeout) {
-      uvTimeout += UV_FREQ;
-      uint8_t u = uv.readUVI();
-      values.storeUVI(u);
-    }
-
-    if (ms > showTimeout) {
-      /*
-      String c = "CO20 ";
-      for (int i = 0; i < co2_idx; i++) {
-      c = c + co2[i] + " ";
-      }
-      c += "CO21";
-      // SerialBT.println(c);
-      Serial.println(c);
-      // SerialBT.println(pedo.steps);
-
-
-      Serial.print("AQ: ");
-      Serial.println(co2[co2_idx-1]);
-      Serial.print("UV: ");
-      Serial.println(uvi[uvi_idx-1]);
-      Serial.print("Steps: ");
-      Serial.println(pedo.steps);
-      Serial.println();
-      */
-
-      // SerialBT.println(ms);
-      showTimeout += 1000;
-
-    }
     if ((ms - lastEmptied) > STORE_TO_FLASH_AFTER_MS) {
       lastEmptied = ms;
       values.storeRAMToFlash();
     }
-  }
-  else if (state == ONLY_BT) {
-    
   }
   else if (state == DEEP_SLEEP) {
     if (values.co2_idx >= 6) {
@@ -159,7 +146,7 @@ void loop() {
 }
 
 void goSleep() {
-  // delete(&SerialBT);   // TODO
+  // delete(&SerialBLUETOOTH);   // TODO
   Serial.println("Enter sleep");
   detachInterrupt(digitalPinToInterrupt(BUTTON_PIN));
   delay(2000);
@@ -173,22 +160,29 @@ void goSleep() {
   wakeUp();
 }
 
+void goLightSleepTimeout(int milli) {
+  esp_sleep_enable_timer_wakeup(milli*1000);
+  esp_light_sleep_start();
+  if (milli == 60000) {
+    minuteCounter++;
+  }
+}
+
 void wakeUp() {
   if (digitalRead(BUTTON_PIN) == 1) {
     state = SENSORS_ACTIVE;
     sensorsInit();
     
-    // BluetoothSerial SerialBT; // TODO
-    // SerialBT.begin("Yumi"); // TODO
+    // BluetoothSerial SerialBLUETOOTH; // TODO
+    // SerialBLUETOOTH.begin("Yumi"); // TODO
   }
-  else if (digitalRead(BT_PIN) == 1) {
-    state = ONLY_BT;
+  else if (digitalRead(BLUETOOTH_PIN) == 1) {
     // ble.init(); TODO
     bleOn = 1;
   }
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_GPIO);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), buttonISR, RISING);
-  attachInterrupt(digitalPinToInterrupt(BT_PIN), buttonISR, RISING);
+  attachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN), buttonISR, RISING);
   Serial.println("Good morning!");
 }
 
@@ -196,7 +190,7 @@ void buttonISR() {
   if (interruptFlag == 0) {
     interruptFlag++;
     debounceTimer = ms + 100;
-    led.toggle();
+    ledRed.toggle();
 
     if (state == SENSORS_ACTIVE) {
       state = DEEP_SLEEP;
@@ -205,7 +199,7 @@ void buttonISR() {
 }
 
 void bluetoothButtonISR() {
-  // Only for BT off, because BT on is handled in wakeup function
+  // Only for BLUETOOTH off, because BLUETOOTH on is handled in wakeup function
   // If bluetooth on
 
 

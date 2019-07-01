@@ -8,21 +8,22 @@
 #endif
 
 #include <time.h>
+#include <rtc.h>  // arduino-esp32-master/tools/sdk/include/soc/soc/rtc.h
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
 
 class Timer {
 	public:
 		Timer(void) {
-			uint32_t schedule[20] = {0};
+
 		};
 		~Timer(void) {};
 
 		uint32_t globalBootTime;
 
 		void init(void);
-		uint32_t getMillis(void);
-		uint32_t getTicks(void);
+		uint64_t getMillis(void);
+		// uint32_t getTicks(void);
 		void check(void);
 		void add(void);
 

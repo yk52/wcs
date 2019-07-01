@@ -63,6 +63,7 @@ class Values {
 		float temp[TEMP_STORAGE_SIZE] = {0}; // in degrees
 		uint8_t temp_idx;
 		uint16_t steps;
+		bool pedoEnable;
 
 		// Set Threshold values
 		void setCO2Thresh(uint16_t val);
