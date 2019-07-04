@@ -8,7 +8,7 @@
 #endif
 
 #include <time.h>
-#include <rtc.h>  // arduino-esp32-master/tools/sdk/include/soc/soc/rtc.h
+// #include <rtc.h>  // arduino-esp32-master/tools/sdk/include/soc/soc/rtc.h
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
 
