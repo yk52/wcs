@@ -65,12 +65,13 @@ void setup() {
 void loop() {
   ms = millis();
   
+  
   if (state == SENSORS_ACTIVE) {
-    /*
-    if (warning) {
+    
+    if (error) {
       handleWarning();
     }
-    */
+    
     
     if (values.pedoEnable && ms > pedoTimeout) {
       uint16_t x = pedo.getPedo();
@@ -90,7 +91,11 @@ void loop() {
         pedoTimeout += PEDO_FREQ;
       }
     }
-
+    if (ms > uvTimeout) {
+      uvTimeout += UV_FREQ;
+      uint8_t u = uv.readUVI();
+      values.storeUVI(u);
+    }
     if (ms > airTimeout) {
       while (!ccs.available());
       airTimeout += AQ_FREQ;
@@ -105,25 +110,23 @@ void loop() {
         error = 1;
       }
     }
-    if (ms > uvTimeout) {
-      uvTimeout += UV_FREQ;
-      uint8_t u = uv.readUVI();
-      values.storeUVI(u);
-    }
+
 
     if (ms > showTimeout) {
-    
+
+      Serial.println(ms);
       Serial.print("AQ: ");
       Serial.println(values.getLastCO2());
       Serial.print("UV: ");
       Serial.println(values.getLastUVI());
-      Serial.print("Steps: ");
-      Serial.println(values.getLastStep());
+      Serial.print("Temp: ");
+      Serial.println(values.getLastTemp());
       Serial.println();
       
 
       // SerialBT.println(ms);
-      showTimeout += 1000;
+      showTimeout += 60000;
+      delay(500);
 
     }
     if ((ms - lastEmptied) > STORE_TO_FLASH_AFTER_MS) {
@@ -133,10 +136,10 @@ void loop() {
   }
 
   else if (state == DEEP_SLEEP) {
-    if (values.co2_idx >= 6) {
+    if (values.co2_idx >= 1) {
       values.storeRAMToFlash();
     }
-    goSleep();
+    goDeepSleep();
   }
 
   if (interruptFlag > 0) {
@@ -144,20 +147,27 @@ void loop() {
       interruptFlag = 0;
     }
   }
+
+  if (!values.pedoEnable && !bleOn) {
+    goLightSleepTimeout(1000);
+  }
 }
 
+void goLightSleepTimeout(uint64_t sleepMillis) {
+  esp_sleep_enable_timer_wakeup(sleepMillis * 1000);
+  esp_light_sleep_start();
+}
 
-
-void goSleep() {
+void goDeepSleep() {
   // delete(&SerialBT);   // TODO
   Serial.println("Enter sleep");
   detachInterrupt(digitalPinToInterrupt(BUTTON_PIN));
-  delay(2000);
+  delay(1000);
   // TODO: Take necessary measures (like storing remaining data into flash, reset steps etc etc)
 
   // TODO Add Bluetooth button later
   // TODO change Interrupt level if necessary
-  gpio_wakeup_enable(GPIO_NUM_27, GPIO_INTR_HIGH_LEVEL);
+  gpio_wakeup_enable(GPIO_NUM_4, GPIO_INTR_HIGH_LEVEL);
   esp_sleep_enable_gpio_wakeup();
   esp_light_sleep_start();
   wakeUp();
@@ -180,6 +190,7 @@ void wakeUp() {
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), buttonISR, RISING);
   attachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN), buttonISR, RISING);
   Serial.println("Good morning!");
+  delay(1000);
 }
 
 void buttonISR() {

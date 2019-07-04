@@ -33,7 +33,7 @@ bool Adafruit_CCS811::begin(uint8_t addr)
 	setThresholds(0, 1400, 50);
 	
 	//default to read every second
-	setDriveMode(CCS811_DRIVE_MODE_60SEC);
+	setDriveMode(CCS811_DRIVE_MODE_1SEC);
 	
 	return true;
 }
