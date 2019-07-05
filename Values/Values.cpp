@@ -437,7 +437,7 @@ std::string Values::getParameterAsString(uint16_t parameter) {
 	return stdString;
 }
 
-std::string Values::getEepromAsString(uint8_t value) {
+std::string Values::getUintAsString(uint8_t value) {
 	char buffer[10];
 	sprintf(buffer, "%d", value);
 	std::string stdString(buffer);
@@ -450,19 +450,24 @@ std::string Values::prepareData() {
 	/**************************************************************************
 	 *    						CO2
 	 **************************************************************************/
-	data += "CO: ";
+	data += "CO2: ";
 	uint16_t currentFlashIdx = getCurrentCO2FlashIdx();
 	if (currentFlashIdx != CO2_FLASH_IDX_START) {								// if CurrentCO2FlashIdx is not at the starting position, get old data from flash
 		int address = CO2_FLASH_IDX_START;
 		int i;
 		for (i = 0; i < currentFlashIdx - CO2_FLASH_IDX_START; i++) {			// get data from flash
 			uint8_t value = EEPROM.read(address);
-			data += getEepromAsString(value);
+			data += getUintAsString(value);
 			data += " ";
 			address++;
 		}
 	}
-	data += currentCO2Array;														// get data from current array
+	for (i = 0; i < CO2_STORAGE_SIZE; i++) {							// get data current array 		length ???
+		data += getUintAsString(co2[i]);
+		data += " ";
+	}
+
+															// get data from current array
 																				// Todo: clear flash
 
 														
