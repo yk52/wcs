@@ -24,27 +24,30 @@ void loop() {
   //Serial.println(values.co2Thresh);
   //if (ble.messageReceived) {
   if (true) {
-    Serial.println("message received");
+    Serial.print("message sent:   ");
     sent = ble.getMessage();
     Serial.println(sent.c_str());
     processed = values.processMessage(sent);
 
-    Serial.print("processed: ");
+    Serial.print("message processed:   ");
     Serial.println(processed.c_str());
     
-    Serial.print("parameter is ");
+    Serial.print("parameter:   ");
     Serial.println(values.parameter.c_str());
     
-    Serial.print("_value is ");
+    Serial.print("value is:   ");
     Serial.println(values._value);
     
-    Serial.print("testThresh is ");
-    Serial.println(values.testThresh);
+    /*Serial.print("testThresh is ");
+    Serial.println(values.testThresh);*/
+
+    ble.write(processed);
+
+    Serial.println("");
+    Serial.println("");
     Serial.println("");
     Serial.println("");
 
-    ble.write(processed);
-    
     //txValue = values.processMessage(ble.getMessage());
     //if (txValue.compare("DataRequest")) {         
       // send data
