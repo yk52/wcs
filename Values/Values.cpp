@@ -437,7 +437,104 @@ std::string Values::getParameterAsString(uint16_t parameter) {
 	return stdString;
 }
 
+std::string Values::getEepromAsString(uint8_t value) {
+	char buffer[10];
+	sprintf(buffer, "%d", value);
+	std::string stdString(buffer);
+	return stdString;
+}
 
+std::string Values::prepareData() {
+	std::string data = "";														// make sure data string is empty
+	
+	/**************************************************************************
+	 *    						CO2
+	 **************************************************************************/
+	data += "CO: ";
+	uint16_t currentFlashIdx = getCurrentCO2FlashIdx();
+	if (currentFlashIdx != CO2_FLASH_IDX_START) {								// if CurrentCO2FlashIdx is not at the starting position, get old data from flash
+		int address = CO2_FLASH_IDX_START;
+		int i;
+		for (i = 0; i < currentFlashIdx - CO2_FLASH_IDX_START; i++) {			// get data from flash
+			uint8_t value = EEPROM.read(address);
+			data += getEepromAsString(value);
+			data += " ";
+			address++;
+		}
+	}
+	data += currentCO2Array;														// get data from current array
+																				// Todo: clear flash
+
+														
+	
+	
+	/**************************************************************************
+	 *    						VOC
+	 **************************************************************************/
+	data += "VOC: ";
+	currentFlashIdx = getCurrentVOCFlashIdx();
+	if (currentFlashIdx != VOC_FLASH_IDX_START) {								// if CurrentCO2FlashIdx is not at the starting position, get old data from flash
+		int address = VOC_FLASH_IDX_START;
+		int i;
+		for (i = 0; i < currentFlashIdx - VOC_FLASH_IDX_START; i++) {			// get data from flash
+			uint8_t value = EEPROM.read(address);
+			data += getEepromAsString(value);
+			data += " ";
+			address++;
+		}
+	}
+	data += currentVOCArray;														// get data from current array
+																					// Todo: clear flash
+
+
+	/**************************************************************************
+	 *    						TEMP
+	 **************************************************************************/
+	data += "Temp: ";
+	currentFlashIdx = getCurrentTemoFlashIdx();
+	if (currentFlashIdx != TEMP_FLASH_IDX_START) {								// if CurrentCO2FlashIdx is not at the starting position, get old data from flash
+		int address = TEMP_FLASH_IDX_START;
+		int i;
+		for (i = 0; i < currentFlashIdx - TEMP_FLASH_IDX_START; i++) {			// get data from flash
+			uint8_t value = EEPROM.read(address);
+			data += getEepromAsString(value);
+			data += " ";
+			address++;
+		}
+	}
+	data += currentTempArray;
+		
+		
+	/**************************************************************************
+	 *    						UVI
+	 **************************************************************************/
+	data += "UVI: ";
+	currentFlashIdx = getCurrentUVIFlashIdx();
+	if (currentFlashIdx != UVI_FLASH_IDX_START) {								// if CurrentCO2FlashIdx is not at the starting position, get old data from flash
+		int address = UVI_FLASH_IDX_START;
+		int i;
+		for (i = 0; i < currentFlashIdx - UVI_FLASH_IDX_START; i++) {			// get data from flash
+			uint8_t value = EEPROM.read(address);
+			data += getEepromAsString(value);
+			data += " ";
+			address++;
+		}
+	}
+	data += currentUVIArray;
+	
+	/**************************************************************************
+	 *    						Step
+	 **************************************************************************/
+	data += "Steps: ";
+	
+	
+	// set all indices back
+	setCurrentCO2FlashIdx(CO2_FLASH_IDX_START);
+	setCurrentVOCFlashIdx(VOC_FLASH_IDX_START);
+	setCurrentTempFlashIdx(TEMP_FLASH_IDX_START);
+	setCurrentUVIFlashIdx(UVI_FLASH_IDX_START);
+	return data;
+}
 
  std::string Values::processMessage(std::string rxValue) {
 	/*********************************************************************************

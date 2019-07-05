@@ -117,16 +117,21 @@ class Values {
 		void storeUVI(uint8_t);
 		bool storeRAMToFlash(void);
 
-		// take the message sent from the phone and triggers respective functions, sets
-		// tresholds, gets values, etc.
-		// Format must be: "setCo2Threshold:4"
+		/* take the message sent from the phone and triggers respective functions, sets
+		 * tresholds, gets values, etc.
+		 * Format must be: "setCo2Threshold:4"*/
 		std::string processMessage(std::string);
 		std::string getParameterAsString(uint16_t);
+		
+		// prepare data for bluetooth transmission: pack from flash and current arrays
+		void prepareData(std::string data);
 
 		// global var for debug
 	    std::string parameter;
 		std::string _stdStringValue;
 		int _value;
+		std::string data;
+		std::string currentArray;
 
 
 
