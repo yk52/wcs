@@ -19,7 +19,6 @@ uint8_t state = DEEP_SLEEP;
 BluetoothSerial SerialBT;
 // BLE_wcs ble;
 
-// By creating values object, the thresholds are automatically set.
 Values values;
 
 Adafruit_CCS811 ccs;
@@ -30,7 +29,7 @@ InterfaceOut vib(VIBRATION_PIN);
 InterfaceOut ledRed(LEDRED_PIN);
 InterfaceOut ledGreen(LEDGREEN_PIN);
 InterfaceOut ledBlue(LEDBLUE_PIN);
-InterfaceOut sensors(SENSORS_EN_PIN); // auf high schalten?
+InterfaceOut sensors(SENSORS_EN_PIN); // auf high schalten nach wakeup
 
 bool error = 0;
 uint8_t interruptFlag = 0;
@@ -48,30 +47,60 @@ uint32_t showTimeout = 0;
 
 bool bleOn = 0;
 
-
+////////////////////////////////////////////////////////////////////////////////////
 void setup() {
-  // initialize the serial communications:
-
+  // Serial communication init
   Serial.begin(BAUDRATE);
   while (!Serial) {
     delay(10);
   }
+
+  // I2C communication to sensors init
   Wire.begin(SDA_PIN, SCL_PIN);
-  pinMode(BUTTON_PIN, INPUT);
+
+  // Buttons init
+  pinMode(POWER_PIN, INPUT);
+  pinMode(BLUETOOTH_PIN, INPUT);
+
+  // Thresholds for sensor values init
   values.init();
-  // SerialBT.begin("Yumi"); // TODO
+
+  // TEST PURPOSES
+  /* 
+  // CHECK BUTTON INPUT VALUES
+  for (int i = 0; i < 50; i++) {
+    Serial.print("button: ");
+    Serial.println(digitalRead(POWER_PIN));
+    Serial.print("ble: ");
+    Serial.println(digitalRead(BLUETOOTH_PIN));
+    Serial.println();
+    delay(500);
+  }
+
+  // CHECK VIBRATION MODULE
+  vibrate(300, 5);
+  */
+  delay(500);
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////
 
 void loop() {
   ms = millis();
   
-  
-  if (state == SENSORS_ACTIVE) {
+  if (state == DEEP_SLEEP) {
+    if (values.co2_idx >= 1) {
+      values.storeRAMToFlash();
+    }
+    values.resetSteps();
+    goDeepSleep();
+  }
+  else if (state == SENSORS_ACTIVE) {
     
     if (error) {
       handleWarning();
     }
-    
     
     if (values.pedoEnable && ms > pedoTimeout) {
       uint16_t x = pedo.getPedo();
@@ -123,10 +152,12 @@ void loop() {
       Serial.println(values.getLastTemp());
       Serial.println();
       
-
+      ledRed.toggle();
+      ledBlue.toggle();
+      ledGreen.toggle();
       // SerialBT.println(ms);
-      showTimeout += 60000;
-      delay(500);
+      showTimeout += 1000;
+
 
     }
     if ((ms - lastEmptied) > STORE_TO_FLASH_AFTER_MS) {
@@ -135,12 +166,7 @@ void loop() {
     }
   }
 
-  else if (state == DEEP_SLEEP) {
-    if (values.co2_idx >= 1) {
-      values.storeRAMToFlash();
-    }
-    goDeepSleep();
-  }
+
 
   if (interruptFlag > 0) {
     if (debounceTimer < ms) {
@@ -149,7 +175,8 @@ void loop() {
   }
 
   if (!values.pedoEnable && !bleOn) {
-    goLightSleepTimeout(1000);
+    delay(1000);
+    goLightSleepTimeout(UV_FREQ - 1000);
   }
 }
 
@@ -159,11 +186,15 @@ void goLightSleepTimeout(uint64_t sleepMillis) {
 }
 
 void goDeepSleep() {
-  // delete(&SerialBT);   // TODO
+  values.storeSleepTime();
+  sensors.off();
+  ledGreen.off();
+  ledRed.off();
+  ledBlue.off();
   Serial.println("Enter sleep");
-  detachInterrupt(digitalPinToInterrupt(BUTTON_PIN));
+  detachInterrupt(digitalPinToInterrupt(POWER_PIN));
   delay(1000);
-  // TODO: Take necessary measures (like storing remaining data into flash, reset steps etc etc)
+  // TODO: Take necessary measures (reset steps etc etc)
 
   // TODO Add Bluetooth button later
   // TODO change Interrupt level if necessary
@@ -174,9 +205,11 @@ void goDeepSleep() {
 }
 
 void wakeUp() {
-  if (digitalRead(BUTTON_PIN) == 1) {
+  if (digitalRead(POWER_PIN) == 1) {
     state = SENSORS_ACTIVE;
+    ledGreen.on();
     sensorsInit();
+    values.storeSleepDuration();
     
     // BluetoothSerial SerialBT; // TODO
     // SerialBT.begin("Yumi"); // TODO
@@ -187,7 +220,7 @@ void wakeUp() {
     bleOn = 1;
   }
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_GPIO);
-  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), buttonISR, RISING);
+  attachInterrupt(digitalPinToInterrupt(POWER_PIN), buttonISR, RISING);
   attachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN), buttonISR, RISING);
   Serial.println("Good morning!");
   delay(1000);
@@ -226,29 +259,49 @@ void bluetoothButtonISR() {
 }
 
 void sensorsInit() {
+  sensors.on();
+  delay(500);
   // UV
   if (!uv.begin()) {
     Serial.println("Failed to communicate with VEML6075 UV sensor! Please check your wiring.");
     error = 1;
   }
-  Serial.println("Found VEML6075 (UV) sensor");
+  else {
+    Serial.println("Found VEML6075 (UV) sensor");
+  }
+  
 
   // Air Quality init
   if (!ccs.begin()) {
     Serial.println("Failed to start Air Quality sensor! Please check your wiring.");
-    while (1);
+    error = 1;
+  }
+  while (error) {
+    ledRed.on();
+    delay(1000);
+    ledRed.off();
+    delay(1000);
   }
   Serial.println("Found CCS811 (Air Quality) sensor");
   //calibrate temperature sensor on CCS811
   while (!ccs.available());
   float t = ccs.calculateTemperature();
-  ccs.setTempOffset(t - 25.0);
+  ccs.setTempOffset(t - 31.0);
   pedo.calibrate();
 }
 
 void handleWarning() {
   if (warningCounter == 0) {
     warningCounter++;
-    
+  }
+  ledRed.on();
+}
+
+void vibrate(int delayMs, int times) {
+  for (int i = 0; i < times; i++) {
+    vib.on();
+    delay(delayMs);
+    vib.off();
+    delay(delayMs);
   }
 }

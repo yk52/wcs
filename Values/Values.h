@@ -42,6 +42,8 @@ class Values {
 		uint8_t co2Mask = 0x10;
 
 		void init(void);
+		void storeSleepDuration();
+
 		void setUVIFlag(void);
 		void setStepFlag(void);
 		void setTempFlag(void);

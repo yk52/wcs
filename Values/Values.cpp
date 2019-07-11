@@ -68,6 +68,7 @@ void Values::init(void) {
 	}
 }
 
+
 void Values::setUVIFlag(void) {
 	warning |= uviMask;
 }
@@ -222,6 +223,7 @@ uint16_t Values::getCurrentUVIFlashIdx(void) {
 }
 
 
+
 // ...and most recent values TODO: necessary?
 uint16_t Values::getLastCO2(void) {
 	return co2[co2_idx-1];
@@ -331,12 +333,19 @@ bool Values::storeSteps(uint16_t val) {
 	else {
 		return 0;
 	}
-
 }
 
 void Values::resetSteps(void) {
 	steps = 0;
 }
+
+void Values::storeSleepDuration(void) {
+
+}
+
+
+
+
 
 void Values::storeUVI(uint8_t val) {
 	uvi[uvi_idx++] = val;

@@ -2,8 +2,7 @@
 #define CONFIG_H_
 
 #define DEEP_SLEEP			0
-#define ONLY_BT				1
-#define SENSORS_ACTIVE		2
+#define SENSORS_ACTIVE		1
 
 #define BAUDRATE			9600
 
@@ -17,13 +16,22 @@
 #define STEP_GOAL_ADDR_LO		5
 #define STEP_GOAL_ADDR_HI		6
 
-#define WAKEUP_HOUR_ADDR
-#define WAKEUP_MIN_ADDR
+// Store deep sleep duration in ms
+#define SLEEP_DUR_IDX_START		3001
+#define SLEEP_DUR_IDX_STOP		3400
+// Store index of last sensor measurement before deep sleep happened
+#define IDX_BEFORE_SLEEP_START	3401
+#define IDX_BEFORE_SLEEP_STOP	3800
+
+#define SLEEP_DUR_ADDR_LO		50
+#define SLEEP_DUR_ADDR_HI		51
+#define IDX_BEFORE_SLEEP_ADDR_LO	52
+#define IDX_BEFORE_SLEEP_ADDR_LO	53
 
 // Store current FLASH storage index before going to sleep and every 150 min
 // 2 Bytes necessary because index <= 1000
-#define STEPS_FLASH_ADDR_LO 90
-#define STEPS_FLASH_ADDR_HI 91
+#define STEPS_FLASH_ADDR_LO			90
+#define STEPS_FLASH_ADDR_HI			91
 #define CO2_FLASH_IDX_ADDR_LO		92
 #define CO2_FLASH_IDX_ADDR_HI		93
 #define VOC_FLASH_IDX_ADDR_LO		94
@@ -33,9 +41,9 @@
 #define TEMP_FLASH_IDX_ADDR_LO		98
 #define TEMP_FLASH_IDX_ADDR_HI		99
 
-#define CO2_FLASH_IDX_START		101
-#define CO2_FLASH_IDX_STOP		500
-#define VOC_FLASH_IDX_START		501
+#define CO2_FLASH_IDX_START			101
+#define CO2_FLASH_IDX_STOP			500
+#define VOC_FLASH_IDX_START			501
 #define VOC_FLASH_IDX_STOP		1000
 #define UVI_FLASH_IDX_START		1001
 #define UVI_FLASH_IDX_STOP		1500
@@ -53,25 +61,24 @@
 
 
 // Pins as in WCS_Version5
-#define	VIBRATION_PIN		17
-#define LEDBLUE_PIN			26	// Bluetooth
-#define	LEDGREEN_PIN		27	// Power
-#define LEDRED_PIN			14	// Warning
-#define BUTTON_PIN			4
-#define BLUETOOTH_PIN		2
+#define	VIBRATION_PIN		17//35
+#define LEDBLUE_PIN			26//23	// Bluetooth
+#define	LEDGREEN_PIN		27//39	// Power
+#define LEDRED_PIN			14//15	// Warning
+#define POWER_PIN			4//36
+#define BLUETOOTH_PIN		2//34
 
 #define SENSORS_EN_PIN		13
-#define GAS_SENSOR_RST_PIN	23
-#define GAS_SENSOR_INT_PIN	16
+#define GAS_SENSOR_INT_PIN	4
 
-#define SDA_PIN				18
-#define SCL_PIN				19
+#define SDA_PIN				18//22
+#define SCL_PIN				19//21
 
 
 // Frequencies
 #define PEDO_FREQ			30
-#define AQ_FREQ				600000	// 10 min
-#define UV_FREQ				60000	// 1 min
+#define AQ_FREQ				1000 // 600000	// 10 min
+#define UV_FREQ				1000 // 60000	// 1 min
 
 // Hold info for 150 minutes
 #define CO2_STORAGE_SIZE	15
@@ -81,9 +88,9 @@
 #define WARNING_STORAGE_SIZE 50
 
 // Pedometer
-#define X_PIN 				34
-#define Y_PIN 				35
-#define Z_PIN 				32
+#define X_PIN 				34//12
+#define Y_PIN 				35//14
+#define Z_PIN 				32//27
 #define PEDO_CALIBRATION_SAMPLE_SIZE 40
 #define PEDO_SAMPLE_SIZE 		15
 #define ACCL				85000

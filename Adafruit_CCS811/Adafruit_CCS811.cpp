@@ -29,7 +29,7 @@ bool Adafruit_CCS811::begin(uint8_t addr)
 	if(checkError()) return false;
 	if(!_status.FW_MODE) return false;
 	
-	enableInterrupt();
+	disableInterrupt();
 	setThresholds(0, 1400, 50);
 	
 	//default to read every second
