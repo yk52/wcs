@@ -118,7 +118,8 @@ void loop() {
       bool goalAchieved = values.storeSteps(x);
 
       if (goalAchieved) {
-        // Do some fancy light and Vibration stuff
+        // vibrate in short intervals
+        vibrate(200, 5);
       }
       
       // Step registered
@@ -131,6 +132,7 @@ void loop() {
         pedoTimeout += PEDO_FREQ;
       }
     }
+    
     if (ms > uvTimeout) {
       uvTimeout += UV_FREQ;
       uint8_t u = uv.readUVI();
@@ -261,6 +263,12 @@ void checkButtonState() {
     }
   }
   // Check Power Button
+  if (checkPower && (ms > powerButtonPressed + 700) {
+    if (digitalRead(POWER_PIN) == !PRESSED_BUTTON_LEVEL) {
+      error = 0;
+      checkPower = 0;
+    }
+  }
   if (checkPower && (ms > powerButtonPressed + 2500) {
     checkPower = 0;
     if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
