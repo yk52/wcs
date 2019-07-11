@@ -339,7 +339,7 @@ void Values::resetSteps(void) {
 	steps = 0;
 }
 
-void Values::storeSleepDuration(void) {
+void Values::storeSleepDuration(uint32_t duration) {
 
 }
 

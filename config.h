@@ -3,6 +3,7 @@
 
 #define DEEP_SLEEP			0
 #define SENSORS_ACTIVE		1
+#define ONLY_BT				2
 
 #define BAUDRATE			9600
 
@@ -60,13 +61,15 @@
 #define SKIN_TYPE_5				90	// actually >90
 
 
-// Pins as in WCS_Version5
+// Pins as in WCS_Version5 // Version 10
 #define	VIBRATION_PIN		17//35
 #define LEDBLUE_PIN			26//23	// Bluetooth
 #define	LEDGREEN_PIN		27//39	// Power
 #define LEDRED_PIN			14//15	// Warning
+// Button pins
 #define POWER_PIN			4//36
 #define BLUETOOTH_PIN		2//34
+#define PRESSED_BUTTON_LEVEL	1
 
 #define SENSORS_EN_PIN		13
 #define GAS_SENSOR_INT_PIN	4

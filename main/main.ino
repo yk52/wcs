@@ -32,6 +32,8 @@ InterfaceOut ledBlue(LEDBLUE_PIN);
 InterfaceOut sensors(SENSORS_EN_PIN); // auf high schalten nach wakeup
 
 bool error = 0;
+bool checkBT = 0;
+bool checkPower = 0;
 uint8_t interruptFlag = 0;
 uint32_t debounceTimer = 0;
 int warningCounter = 0;
@@ -39,6 +41,7 @@ bool firstBooted = 1;
 
 // Timers
 uint32_t ms = 0;
+uint32_t sleepTime = 0;
 uint32_t lastEmptied = 0;
 uint32_t pedoTimeout = 0;
 uint32_t uvTimeout = 0;
@@ -47,7 +50,7 @@ uint32_t showTimeout = 0;
 
 bool bleOn = 0;
 
-////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
   // Serial communication init
   Serial.begin(BAUDRATE);
@@ -84,11 +87,19 @@ void setup() {
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void loop() {
   ms = millis();
-  
+
+  if (checkBT || checkPower) {
+    checkButtonState();
+  }
+  //___Bluetooth communication on ____________________________________
+  if (bleOn) {
+    // TODO
+  }
+  //__________________________________________________________________
   if (state == DEEP_SLEEP) {
     if (values.co2_idx >= 1) {
       values.storeRAMToFlash();
@@ -96,8 +107,8 @@ void loop() {
     values.resetSteps();
     goDeepSleep();
   }
+  //__________________________________________________________________
   else if (state == SENSORS_ACTIVE) {
-    
     if (error) {
       handleWarning();
     }
@@ -157,16 +168,14 @@ void loop() {
       ledGreen.toggle();
       // SerialBT.println(ms);
       showTimeout += 1000;
-
-
     }
     if ((ms - lastEmptied) > STORE_TO_FLASH_AFTER_MS) {
       lastEmptied = ms;
       values.storeRAMToFlash();
     }
   }
-
-
+  
+//__________________________________________________________________
 
   if (interruptFlag > 0) {
     if (debounceTimer < ms) {
@@ -174,11 +183,16 @@ void loop() {
     }
   }
 
-  if (!values.pedoEnable && !bleOn) {
-    delay(1000);
+//_____ Go sleep until next timeout ________________________________
+  if (!checkButton && !values.pedoEnable && !bleOn) {
+    // 1 second Delay to give ESP32 enough time to finish its tasks. Serial communication seems to stop abruptly without finishing when going into sleep.
+    // Sleep a second less instead.
+    delay(1000); 
     goLightSleepTimeout(UV_FREQ - 1000);
   }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void goLightSleepTimeout(uint64_t sleepMillis) {
   esp_sleep_enable_timer_wakeup(sleepMillis * 1000);
@@ -186,75 +200,103 @@ void goLightSleepTimeout(uint64_t sleepMillis) {
 }
 
 void goDeepSleep() {
-  values.storeSleepTime();
+  sleepTime = ms;
   sensors.off();
   ledGreen.off();
   ledRed.off();
   ledBlue.off();
   Serial.println("Enter sleep");
   detachInterrupt(digitalPinToInterrupt(POWER_PIN));
+  detachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN));
   delay(1000);
-  // TODO: Take necessary measures (reset steps etc etc)
 
-  // TODO Add Bluetooth button later
   // TODO change Interrupt level if necessary
   gpio_wakeup_enable(GPIO_NUM_4, GPIO_INTR_HIGH_LEVEL);
+  gpio_wakeup_enable(GPIO_NUM_2, GPIO_INTR_HIGH_LEVEL);
   esp_sleep_enable_gpio_wakeup();
   esp_light_sleep_start();
   wakeUp();
 }
 
 void wakeUp() {
-  if (digitalRead(POWER_PIN) == 1) {
+  delay(2500);
+  // If button still pressed after 2.5 seconds
+  if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
     state = SENSORS_ACTIVE;
     ledGreen.on();
     sensorsInit();
-    values.storeSleepDuration();
-    
-    // BluetoothSerial SerialBT; // TODO
-    // SerialBT.begin("Yumi"); // TODO
+    values.storeSleepDuration(ms - sleepTime); // Does nothing currently. later store ms - sleepTime
   }
-  else if (digitalRead(BLUETOOTH_PIN) == 1) {
-    state = ONLY_BT;
-    // ble.init(); TODO
+  else if (digitalRead(BLUETOOTH_PIN) == PRESSED_BUTTON_LEVEL) {
     bleOn = 1;
+    state = ONLY_BT;
+  }
+  else {
+    // Ignore if button is pressed less than 2.5 seconds
+    goDeepSleep();
+    return;
   }
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_GPIO);
   attachInterrupt(digitalPinToInterrupt(POWER_PIN), buttonISR, RISING);
-  attachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN), buttonISR, RISING);
+  attachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN), bluetoothButtonISR, RISING);
   Serial.println("Good morning!");
   delay(1000);
+}
+
+void checkButtonState() {
+  // Check Bluetooth button
+  if (checkBT && (ms > btButtonPressed + 2500)) {
+    checkBT = 0;
+    if (digitalRead(BLUETOOTH_PIN) == PRESSED_BUTTON_LEVEL) {
+      if (bleOn) {
+          // ble.deinit(); TODO
+          bleOn = 0;
+          ledBlue.off();
+        }
+        else {
+          // ble.init(); TODO
+          bleOn = 1;
+          ledBlue.on();
+        }
+    }
+  }
+  // Check Power Button
+  if (checkPower && (ms > powerButtonPressed + 2500) {
+    checkPower = 0;
+    if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
+      if (state == SENSORS_ACTIVE) {
+        state = DEEP_SLEEP;
+      }
+      else {
+        // Wake up sensors.
+        state = SENSORS_ACTIVE;
+        ledGreen.on();
+        sensorsInit();
+        values.storeSleepDuration(ms - sleepTime); // Does nothing currently. later store ms - sleepTime
+      }
+    }
+
+  }
 }
 
 void buttonISR() {
   if (interruptFlag == 0) {
     interruptFlag++;
     debounceTimer = ms + 100;
-    ledRed.toggle();
+    powerButtonPressed = ms;
+    checkPower = 1;
 
-    if (state == SENSORS_ACTIVE) {
-      state = DEEP_SLEEP;
-    }
   }
 }
 
 void bluetoothButtonISR() {
-  // Only for BT off, because BT on is handled in wakeup function
   // If bluetooth on
-
 
   if (interruptFlag == 0) {
     interruptFlag++;
     debounceTimer = ms + 100;
-    if (bleOn) {
-      // ble.deinit(); TODO
-      bleOn = 0;
-    }
-    else {
-      // ble.init(); TODO
-      bleOn = 1;
-    }
-
+    btButtonPressed = ms;
+    checkBT = 1;
   }
 }
 
@@ -270,7 +312,6 @@ void sensorsInit() {
     Serial.println("Found VEML6075 (UV) sensor");
   }
   
-
   // Air Quality init
   if (!ccs.begin()) {
     Serial.println("Failed to start Air Quality sensor! Please check your wiring.");
