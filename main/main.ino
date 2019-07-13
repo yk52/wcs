@@ -83,6 +83,9 @@ void setup() {
   // CHECK VIBRATION MODULE
   vibrate(300, 5);
   */
+  
+  // TODO to burn in AQ
+  sensors.on();
   delay(500);
 }
 
@@ -119,7 +122,15 @@ void loop() {
 
       if (goalAchieved) {
         // vibrate in short intervals
-        vibrate(200, 5);
+        // vibrate(200, 5);
+        ledBlue.on();
+        delay(1000);
+        ledBlue.off();
+        delay(1000);
+        ledBlue.on();
+        delay(1000);
+        ledBlue.off();
+        delay(1000);
       }
       
       // Step registered
@@ -213,8 +224,8 @@ void goDeepSleep() {
   delay(1000);
 
   // TODO change Interrupt level if necessary
-  gpio_wakeup_enable(GPIO_NUM_4, GPIO_INTR_HIGH_LEVEL);
-  gpio_wakeup_enable(GPIO_NUM_2, GPIO_INTR_HIGH_LEVEL);
+  gpio_wakeup_enable(GPIO_NUM_4, GPIO_INTR_LOW_LEVEL);
+  gpio_wakeup_enable(GPIO_NUM_2, GPIO_INTR_LOW_LEVEL);
   esp_sleep_enable_gpio_wakeup();
   esp_light_sleep_start();
   wakeUp();
