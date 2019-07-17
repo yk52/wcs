@@ -40,7 +40,7 @@ int warningCounter = 0;
 
 // Timers
 uint32_t ms = 0;
-uint32_t showFreq = 5000;
+uint32_t showFreq = 60000;
 uint32_t sleepTime = 0;
 uint32_t lastEmptied = 0;
 uint32_t pedoTimeout = 0;
@@ -148,20 +148,17 @@ void loop() {
     }
     if (ms > airTimeout) {
       while (!ccs.available());
-      airTimeout += AQ_FREQ;
-      if (!ccs.readData()) {
+      if (ccs.readData()) {
+        airTimeout += AQ_FREQ;
         uint16_t c = ccs.geteCO2();
         uint16_t v = ccs.getTVOC();
         values.storeCO2(c);
         values.storeVOC(v);
         values.storeTemp(ccs.calculateTemperature());
-
       }
-      /*
       else {
         error = 1;
       }
-      */
     }
 
 
