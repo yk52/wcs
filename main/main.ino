@@ -194,7 +194,14 @@ void loop() {
           gpio_wakeup_enable(GPIO_NUM_34, GPIO_INTR_LOW_LEVEL); 
           esp_sleep_enable_gpio_wakeup();
           goLightSleepTimeout(UV_FREQ - 1000);
-          // TODO look for wakeup reason
+          if (esp_sleep_get_wakeup_cause() == 7) {
+            if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
+              checkPower = 1; 
+            }
+            else if (digitalRead(BLUETOOTH_PIN) == PRESSED_BUTTON_LEVEL) {
+              checkBT = 1; 
+            }
+          }
       }
     }
   }
