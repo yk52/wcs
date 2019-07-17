@@ -47,7 +47,7 @@ uint32_t pedoTimeout = 0;
 uint32_t uvTimeout = 0;
 uint32_t airTimeout = 0;
 uint32_t showTimeout = 0;
-
+bool measured = 0;
 bool bleOn = 0;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,8 +88,7 @@ void setup() {
   sensors.on();
   delay(500);
   pedo.calibrate();
-  values.pedoEnable = 1;
-  // sensors.off(); // TODO ADD AGAIN LATER
+  sensors.off(); // TODO ADD AGAIN LATER
 }
 
 
@@ -150,6 +149,7 @@ void loop() {
       while (!ccs.available());
       if (ccs.readData()) {
         airTimeout += AQ_FREQ;
+        measured = 1;
         uint16_t c = ccs.geteCO2();
         uint16_t v = ccs.getTVOC();
         values.storeCO2(c);
@@ -160,7 +160,6 @@ void loop() {
         error = 1;
       }
     }
-
 
     if (ms > showTimeout) {
       Serial.print("CO2_idx: ");
@@ -185,13 +184,20 @@ void loop() {
     }
     
     //_____ Go sleep until next timeout ________________________________
-    if (!(checkBT || checkPower) && !values.pedoEnable && !bleOn) {
-      // 1 second Delay to give ESP32 enough time to finish its tasks. Serial communication seems to stop abruptly without finishing when going into sleep.
-      // Sleep a second less instead.
-      delay(1000); 
-      goLightSleepTimeout(UV_FREQ - 1000);
+    if (measured) {
+      if (!(checkBT || checkPower) && !values.pedoEnable && !bleOn) {
+          // 1 second Delay to give ESP32 enough time to finish its tasks. Serial communication seems to stop abruptly without finishing when going into sleep.
+          // Sleep a second less instead.
+          measured = 0;
+          delay(1000); 
+          gpio_wakeup_enable(GPIO_NUM_36, GPIO_INTR_LOW_LEVEL);
+          gpio_wakeup_enable(GPIO_NUM_34, GPIO_INTR_LOW_LEVEL); 
+          esp_sleep_enable_gpio_wakeup();
+          goLightSleepTimeout(UV_FREQ - 1000);
+          // TODO look for wakeup reason
       }
     }
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -207,7 +213,7 @@ void goDeepSleep() {
   Serial.print("Sleep: ");
   Serial.println(millis());
   // Let on to burn AQ in
-  // sensors.off();
+  sensors.off();
   ledGreen.off();
   ledRed.off();
   ledBlue.off();

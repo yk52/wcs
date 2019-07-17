@@ -81,8 +81,8 @@
 
 // Frequencies
 #define PEDO_FREQ			30
-#define AQ_FREQ				5000 // 600000	// 10 min
-#define UV_FREQ				5000	// 1 min
+#define AQ_FREQ				60000 // 600000	// 10 min
+#define UV_FREQ				60000	// 1 min
 
 // Hold info for 150 minutes
 #define CO2_STORAGE_SIZE	1000
