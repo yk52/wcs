@@ -88,5 +88,6 @@ void Adafruit_ADXL335::calibrate()
 	Serial.print("Z Average: "); Serial.println(zavg);
 	Serial.println("Averages have been taken.");
 	Serial.print("Threshold: "); Serial.println(threshold);
+	Serial.print("Vector without acceleration: "); Serial.println(oldVector);
 }
 

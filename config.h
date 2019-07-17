@@ -61,40 +61,40 @@
 #define SKIN_TYPE_5				90	// actually >90
 
 
-// Pins as in WCS_Version5 // Version 10
-#define	VIBRATION_PIN		17//35
-#define LEDBLUE_PIN			26//23	// Bluetooth
-#define	LEDGREEN_PIN		27//39	// Power
-#define LEDRED_PIN			14//15	// Warning
+// Version 10 //Pins as in WCS_Version5
+#define	VIBRATION_PIN		35// 17
+#define LEDBLUE_PIN			23// 26	// Bluetooth
+#define	LEDGREEN_PIN		39//27	// Power
+#define LEDRED_PIN			15// 14	// Warning
 // Button pins
-#define POWER_PIN			4//36
-#define BLUETOOTH_PIN		2//34
-#define PRESSED_BUTTON_LEVEL	1
+#define POWER_PIN			36//4
+#define BLUETOOTH_PIN		34//2
+#define PRESSED_BUTTON_LEVEL	0
 
 #define SENSORS_EN_PIN		13
 #define GAS_SENSOR_INT_PIN	4
 
-#define SDA_PIN				18//22
-#define SCL_PIN				19//21
+#define SDA_PIN				22//18
+#define SCL_PIN				21//19
 
 
 // Frequencies
 #define PEDO_FREQ			30
-#define AQ_FREQ				1000 // 600000	// 10 min
-#define UV_FREQ				1000 // 60000	// 1 min
+#define AQ_FREQ				5000 // 600000	// 10 min
+#define UV_FREQ				5000	// 1 min
 
 // Hold info for 150 minutes
-#define CO2_STORAGE_SIZE	15
-#define VOC_STORAGE_SIZE	15
-#define TEMP_STORAGE_SIZE	15
-#define UVI_STORAGE_SIZE	150
+#define CO2_STORAGE_SIZE	1000
+#define VOC_STORAGE_SIZE	1000
+#define TEMP_STORAGE_SIZE	1000
+#define UVI_STORAGE_SIZE	1000
 #define WARNING_STORAGE_SIZE 50
 
 // Pedometer
-#define X_PIN 				34//12
-#define Y_PIN 				35//14
-#define Z_PIN 				32//27
-#define PEDO_CALIBRATION_SAMPLE_SIZE 40
+#define X_PIN 				12//34
+#define Y_PIN 				14//35
+#define Z_PIN 				27//32
+#define PEDO_CALIBRATION_SAMPLE_SIZE 15
 #define PEDO_SAMPLE_SIZE 		15
 #define ACCL				85000
 #define WAIT_AFTER_STEP		300
