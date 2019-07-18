@@ -20,6 +20,7 @@ uint8_t state = LIGHT_SLEEP;
 std::string sent;
 std::string processed = "prodef";
 BLE_wcs ble;
+uint32_t bleTimer = 0;
 
 Values values;
 Adafruit_CCS811 ccs;
@@ -33,14 +34,13 @@ InterfaceOut ledBlue(LEDBLUE_PIN);
 InterfaceOut sensors(SENSORS_EN_PIN); // auf high schalten nach wakeup
 
 bool firstBoot = 1;
-bool error = 0;
 volatile bool checkBT = 0;
 volatile bool checkPower = 0;
 volatile uint32_t powerDebounceTimer = 0;
 volatile uint32_t btDebounceTimer = 0;
 volatile uint32_t btButtonPressed = 0;
 volatile uint32_t powerButtonPressed = 0;
-uint32_t bleTimer = 0;
+
 
 // Timers
 uint32_t ms = 0;
@@ -76,13 +76,12 @@ void setup() {
   pinMode(BLUETOOTH_PIN, INPUT);
   
   // Thresholds for sensor values init
-
   values.init();
   values.setStepGoal(10);
   sensors.on();
   delay(500);
   pedo.calibrate();
-  values.pedoEnable = 1;
+  // values.pedoEnable = 1;
   // sensors.off(); // TODO ADD AGAIN LATER
 }
 
@@ -95,6 +94,13 @@ void loop() {
   if (checkBT || checkPower) {
     checkButtonState();
   }
+
+  if (ms > warningTimeout) {
+    values.warnCO2 = 1;
+    values.warnVOC = 1;
+    values.warnTemp = 1;
+  }
+  
   //___Bluetooth communication on ____________________________________
   if (bleOn) {
     if (ms > bleTimer) {
@@ -216,7 +222,7 @@ void loop() {
           gpio_wakeup_enable(GPIO_NUM_36, GPIO_INTR_LOW_LEVEL);
           gpio_wakeup_enable(GPIO_NUM_34, GPIO_INTR_LOW_LEVEL); 
           esp_sleep_enable_gpio_wakeup();
-          goLightSleepTimeout(timeLeft - 500);//timeLeft - 1000);
+          goLightSleepTimeout(timeLeft - 500);
           if (esp_sleep_get_wakeup_cause() == 7) {
             if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
               checkPower = 1; 
@@ -247,14 +253,16 @@ void goLightSleep() {
   detachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN));
   delay(1000);
   bleOn = 0;
-  dismissWarning();
+  ble.deinit();
+  values.clearAllWarnings();
+  warning = 0;
+  vib.off();
   // sensors.off();
   ledGreen.off();
   ledRed.off();
   ledBlue.off();
   gpio_wakeup_enable(GPIO_NUM_36, GPIO_INTR_LOW_LEVEL);
   gpio_wakeup_enable(GPIO_NUM_34, GPIO_INTR_LOW_LEVEL);
-  esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
   esp_sleep_enable_gpio_wakeup();
   esp_light_sleep_start();
   wakeUp();
@@ -274,7 +282,6 @@ void wakeUp() {
   
   if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
     Serial.println("WAKE UP, POWER UP!");
-    Serial.println(values.getStepGoal());
     state = SENSORS_ACTIVE;
     Serial.print("UVI thresh: ");
     Serial.println(EEPROM.read(UVI_THRESH_ADDR));
@@ -299,6 +306,7 @@ void wakeUp() {
     bleOn = 1;
     ble.init("Vitameter Main");
     state = ONLY_BT;
+    bleTimer = millis();
   }
   else {
     // Ignore if button is pressed less than a second
@@ -340,6 +348,9 @@ void checkButtonState() {
           checkBT = 0;
           Serial.println("BT nevermind");
         }
+        if (values.warning) {
+          dismissWarning();
+        }
       }
     }
   }
@@ -349,7 +360,7 @@ void checkButtonState() {
       checkPower = 0;
       if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
         if (state == SENSORS_ACTIVE) {
-          state = LIGHT_SLEEP;
+          state = LIGHT_SLEEP;  
         }
         else {
           // Wake up sensors.
@@ -357,25 +368,15 @@ void checkButtonState() {
           // ledGreen.on();
           ledRed.on();
           sensorsInit();
-          // values.storeSleepDuration(ms - sleepTime); // Does nothing currently. later store ms - sleepTime
           setTimeouts();
         }
-      }
-      else if (ms > powerButtonPressed + 500) {
-        if (digitalRead(POWER_PIN) == !PRESSED_BUTTON_LEVEL) {
-          checkPower = 0;
-          if (values.warning) {
-            dismissWarning();
-          }
-          vib.off();
-          ledRed.off();
-        }
-      }
+      }     
     }
   }
 }
 
 void buttonISR() {
+  ms = millis();
   if (powerDebounceTimer < ms) {
     powerDebounceTimer = ms + 100;
     powerButtonPressed = ms;
@@ -384,6 +385,7 @@ void buttonISR() {
 }
 
 void bluetoothButtonISR() {
+  ms = millis();
   // If bluetooth on
   if (btDebounceTimer < ms) {
     btDebounceTimer = ms + 100;
@@ -393,6 +395,7 @@ void bluetoothButtonISR() {
 }
 
 void sensorsInit() {
+  bool error = 0;
   sensors.on();
   delay(3000); 
 
@@ -429,45 +432,49 @@ void sensorsInit() {
     ccs.setTempOffset(t - 23.0);
     firstBoot = 0;    
   }
-  
   pedo.calibrate();
-  error = 0;
 }
 
 void handleWarning() {
   ledRed.on();
   warning = 1;
-  if (warningVibTimeout < ms) {
+  if (warningVibTimeout < millis()) {
     warningCounter++;
     warningVibTimeout = millis() + 500;
     vib.toggle();
   }
-  if (warningCounter >= 6) {
+  if (warningCounter >= 8) {
     dismissWarning();
   }
 }
 
 void dismissWarning() {
-  if (getUVIFlag) {
+  String s;
+  if (values.getUVIFlag()) {
     values.warnUVI = 0;
     values.clearUVIFlag();
+    s = "UVI";
   }
-  else if (getTempFlag) {
+  else if (values.getTempFlag()) {
     values.warnTemp = 0;
     values.clearTempFlag();
+    s = "Temp";
   }
-  else if (getVOCFlag) {
+  else if (values.getVOCFlag()) {
     values.warnVOC = 0;
     values.clearVOCFlag();
+    s = "VOC";
   }
-  else if (getCO2Flag) {
+  else if (values.getCO2Flag()) {
     values.warnCO2 = 0;
     values.clearCO2Flag();
+    s = "CO2";
   }
-  Serial.println("Warning dismissed");
+  Serial.print("Warning dismissed: ");
+  Serial.println(s);
   warning = 0;
   warningCounter = 0;
-  warningTimeout = millis() + 10000;
+  warningTimeout = millis() + 30000;
   ledRed.off();
   vib.off();
 }

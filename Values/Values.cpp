@@ -479,9 +479,9 @@ std::string Values::getParameterAsString(uint16_t parameter) {
 		int value = atoi(cStringValue);								// then cast to int
 		_value = value;												// todo: delete global debug vars
 
-		if (parameter.compare("setTestThresh") == 0) {
-			testThresh = value;
-			return "test";
+		if (parameter.compare("setPedoEnable") == 0) {
+			pedoEnable = value;
+			return "setPedoEnable";
 		} else if (parameter.compare("setCo2Thresh") == 0) {
 			setCO2Thresh(value);
 			return "setCo2Thresh";
@@ -497,10 +497,7 @@ std::string Values::getParameterAsString(uint16_t parameter) {
 			return "setUviThresh";
 		} else if (parameter.compare("setUviDurationThresh") == 0) {
 			setUVIDurationThresh(value);
-			return "set";
-		//} else if (parameter.compare("setUviDuration") == 0) {			existiert wohl nicht
-			//setUVIDuration(value);
-			//return "setUviDuration";
+			return "set UVI Duration";
 		} else if (parameter.compare("setStepGoal") == 0) {
 			setStepGoal(value);
 			return "setStepGoal";
