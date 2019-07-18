@@ -1,5 +1,5 @@
 #include "Adafruit_CCS811.h"
-#include "C:\Users\Yumi\Desktop\wcs\config.h"
+#include <Config.h>
 
 /**************************************************************************/
 /*! 

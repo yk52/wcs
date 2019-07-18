@@ -8,7 +8,7 @@
 #endif
 
 #include <Wire.h>
-#include "C:\Users\Yumi\Desktop\wcs\config.h"
+#include <Config.h>
 
 
 

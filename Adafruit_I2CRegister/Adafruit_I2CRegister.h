@@ -1,4 +1,4 @@
-#include "Adafruit_BusIO_Register.h"
+#include <Adafruit_BusIO_Register.h>
 #ifndef _ADAFRUIT_I2C_REGISTER_H_
 #define _ADAFRUIT_I2C_REGISTER_H_
 
