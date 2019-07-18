@@ -76,9 +76,19 @@ void setup() {
   pinMode(BLUETOOTH_PIN, INPUT);
   
   // Thresholds for sensor values init
+
   values.init();
-  values.setStepGoal(10);
-  
+
+  Serial.print("UVI thresh: ");
+  Serial.println(EEPROM.read(UVI_THRESH_ADDR));
+  Serial.print("CO2 thresh: ");
+  Serial.println(EEPROM.read(CO2_THRESH_ADDR));
+  Serial.print("VOC thresh: ");
+  Serial.println(EEPROM.read(VOC_THRESH_ADDR));
+  Serial.print("Temp thresh: ");
+  Serial.println(EEPROM.read(TEMP_THRESH_ADDR));
+
+  values.setStepGoal(1000);
   Serial.print("Step goal: ");
   Serial.println(values.getStepGoal());
   sensors.on();
@@ -439,7 +449,7 @@ void dismissWarning() {
   Serial.println("Warning dismissed");
   warning = 0;
   warningCounter = 0;
-  warningTimeout = millis() + 60000;
+  warningTimeout = millis() + 10000;
   ledRed.off();
   vib.off();
 }

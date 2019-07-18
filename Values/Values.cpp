@@ -25,6 +25,7 @@ bool pedoEnable = 0;
 void Values::init(void) {
 	EEPROM.begin(FLASH_SIZE);
 	uint8_t thresholdsSet = EEPROM.read(VALUES_SET_ADDR);
+
 	if (thresholdsSet != 1) {
 		// Values initiated flag
 		EEPROM.write(VALUES_SET_ADDR, 1);
@@ -38,7 +39,7 @@ void Values::init(void) {
 		EEPROM.write(UVI_DUR_THRESH_ADDR, 10);
 		uviDurationThresh = 10;
 		EEPROM.write(TEMP_THRESH_ADDR, 30);
-		tempThresh = 30;
+		tempThresh = 35;
 		EEPROM.write(STEP_GOAL_ADDR_HI, 0x27); // 0x2710 = 10000
 		EEPROM.write(STEP_GOAL_ADDR_LO, 0x10);
 		stepGoal = 10000;
@@ -256,6 +257,7 @@ void Values::setCO2Thresh(uint16_t val) {
 	if (oldVal != val) {
 		uint8_t byte = val/100;
 		EEPROM.write(CO2_THRESH_ADDR, byte);
+		EEPROM.commit();
 	}
 	co2Thresh = val;
 }
@@ -265,6 +267,7 @@ void Values::setVOCThresh(uint8_t val) {
 	uint8_t oldVal = getVOCThresh();
 	if (oldVal != val) {
 		EEPROM.write(VOC_THRESH_ADDR, val);
+		EEPROM.commit();
 	}
 	vocThresh = val;
 }
@@ -273,6 +276,7 @@ void Values::setTempThresh(uint8_t val) {
 	uint8_t oldVal = getTempThresh();
 	if (oldVal != val) {
 		EEPROM.write(TEMP_THRESH_ADDR, val);
+		EEPROM.commit();
 	}
 	tempThresh = val;
 }
@@ -293,6 +297,7 @@ void Values::setUVIThresh(uint8_t val) {
 	uint8_t oldVal = getUVIThresh();
 	if (oldVal != val) {
 		EEPROM.write(UVI_THRESH_ADDR, val);
+		EEPROM.commit();
 	}
 	uviThresh = val;
 }
@@ -301,6 +306,7 @@ void Values::setUVIDurationThresh(uint8_t val) {
 	uint8_t oldVal = getUVIDurationThresh();
 	if (oldVal != val) {
 		EEPROM.write(UVI_DUR_THRESH_ADDR, val);
+		EEPROM.commit();
 	}
 	uviDurationThresh = val;
 }
