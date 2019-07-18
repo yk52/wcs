@@ -32,7 +32,7 @@ void Values::init(void) {
 		EEPROM.write(CO2_THRESH_ADDR, 14); // 14 (*100) = 1400
 		co2Thresh = 1400;
 		EEPROM.write(VOC_THRESH_ADDR, 1);
-		vocThresh = 1;
+		vocThresh = 50;
 		EEPROM.write(UVI_THRESH_ADDR, 8);
 		uviThresh = 8;
 		EEPROM.write(UVI_DUR_THRESH_ADDR, 10);
@@ -72,6 +72,7 @@ void Values::init(void) {
 void Values::setUVIFlag(void) {
 	warning |= uviMask;
 }
+
 
 void Values::setStepFlag(void) {
 	warning |= stepMask;
@@ -283,6 +284,7 @@ void Values::setStepGoal(uint16_t val) {
 		uint8_t newHi = (val >> 8) & 0xFF;
 		EEPROM.write(STEP_GOAL_ADDR_LO, newLo);
 		EEPROM.write(STEP_GOAL_ADDR_HI, newHi);
+		EEPROM.commit();
 	}
 	stepGoal = val;
 }
@@ -308,12 +310,18 @@ void Values::storeCO2(uint16_t val) {
 	if (val >= co2Thresh) {
 		setCO2Flag();
 	}
+	else {
+		clearCO2Flag();
+	}
 }
 
 void Values::storeVOC(uint16_t val) {
 	voc[voc_idx++] = val;
 	if (val >= vocThresh) {
 		setVOCFlag();
+	}
+	else {
+		clearVOCFlag();
 	}
 }
 
@@ -322,12 +330,14 @@ void Values::storeTemp(float val) {
 	if (val >= tempThresh) {
 		setTempFlag();
 	}
+	else {
+		clearTempFlag();
+	}
 }
 
 bool Values::storeSteps(uint16_t val) {
 	steps = val;
 	if (steps == stepGoal) {
-		setStepFlag();
 		return 1;
 	}
 	else {

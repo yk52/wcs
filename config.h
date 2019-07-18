@@ -75,8 +75,8 @@
 #define SENSORS_EN_PIN		13
 #define GAS_SENSOR_INT_PIN	4
 
-#define SDA_PIN				22//18
-#define SCL_PIN				21//19
+#define SDA_PIN				22
+#define SCL_PIN				21
 
 
 // Frequencies
@@ -92,9 +92,9 @@
 #define WARNING_STORAGE_SIZE 50
 
 // Pedometer
-#define X_PIN 				12//34
-#define Y_PIN 				14//35
-#define Z_PIN 				27//32
+#define X_PIN 				12
+#define Y_PIN 				14
+#define Z_PIN 				27
 #define PEDO_CALIBRATION_SAMPLE_SIZE 15
 #define PEDO_SAMPLE_SIZE 		15
 #define ACCL				85000

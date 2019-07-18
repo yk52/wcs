@@ -44,7 +44,13 @@ volatile uint32_t powerButtonPressed = 0;
 
 // Timers
 uint32_t ms = 0;
+bool warning = 0;
 uint32_t warningTimeout = 0;
+uint8_t warningCounter = 0;
+uint32_t warningVibTimeout = 0;
+bool goalVib = 0;
+uint8_t vibCounter = 0;
+uint32_t vibTimeout = 0;
 uint32_t showFreq = 2000;
 uint32_t sleepTime = 0;
 uint32_t lastEmptied = 0;
@@ -68,14 +74,18 @@ void setup() {
   // Buttons init
   pinMode(POWER_PIN, INPUT);
   pinMode(BLUETOOTH_PIN, INPUT);
-
+  
   // Thresholds for sensor values init
   values.init();
- 
+  values.setStepGoal(10);
+  
+  Serial.print("Step goal: ");
+  Serial.println(values.getStepGoal());
   sensors.on();
   delay(500);
   pedo.calibrate();
-  sensors.off(); // TODO ADD AGAIN LATER
+  // values.pedoEnable = 1;
+  // sensors.off(); // TODO ADD AGAIN LATER
 }
 
 
@@ -122,27 +132,36 @@ void loop() {
   }
   //__________________________________________________________________
   else if (state == SENSORS_ACTIVE) {
-    if ((warningTimeout > ms) && values.warning) {
+    if ((warningTimeout < ms) && values.warning) {
       handleWarning();
     }
-    
     if (values.pedoEnable && ms > pedoTimeout) {
       uint16_t x = pedo.getPedo();
-      bool goalAchieved = values.storeSteps(x);
-
-      if (goalAchieved) {
-        // vibrate in short intervals
-        vibrate(200, 5);
-      }
       
       // Step registered
       if (pedo.flag) {
         Serial.println(x);
+        bool goalAchieved = values.storeSteps(x);
+        if (goalAchieved) {
+          // vibrate in short intervals
+          goalVib = 1;
+          vibTimeout = ms;
+        }
         pedoTimeout += WAIT_AFTER_STEP;
         pedo.flag = 0;
       }
       else {
         pedoTimeout += PEDO_FREQ;
+      }
+      if (goalVib && ms > vibTimeout) {
+        vib.toggle();
+        vibTimeout += 500;
+        vibCounter++;
+      }
+      if (vibCounter >= 4) {
+        goalVib = 0;
+        vibCounter= 0;
+        vib.off();
       }
     }
     
@@ -185,7 +204,7 @@ void loop() {
     
     //_____ Go sleep until next timeout ________________________________
 
-    if (!(checkBT || checkPower) && !values.pedoEnable && !bleOn) {
+    if (!(checkBT || checkPower) && !values.pedoEnable && !bleOn && !warning) {
       // 1 second Delay to give ESP32 enough time to finish its tasks. Serial communication seems to stop abruptly without finishing when going into sleep.
       // Sleep a second less instead.
       ms = millis();
@@ -227,10 +246,11 @@ void goLightSleep() {
   detachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN));
   delay(1000);
   bleOn = 0;
-  sensors.off();
+  // sensors.off();
   ledGreen.off();
   ledRed.off();
   ledBlue.off();
+  vib.off();
   gpio_wakeup_enable(GPIO_NUM_36, GPIO_INTR_LOW_LEVEL);
   gpio_wakeup_enable(GPIO_NUM_34, GPIO_INTR_LOW_LEVEL);
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
@@ -252,6 +272,7 @@ void wakeUp() {
   delay(1000);
   if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
     Serial.println("WAKE UP, POWER UP!");
+    Serial.println(values.getStepGoal());
     state = SENSORS_ACTIVE;
     // ledGreen.on();
     ledRed.on();
@@ -329,7 +350,11 @@ void checkButtonState() {
       else if (ms > powerButtonPressed + 500) {
         if (digitalRead(POWER_PIN) == !PRESSED_BUTTON_LEVEL) {
           checkPower = 0;
-          dismissWarning();
+          if (values.warning) {
+            dismissWarning();
+          }
+          vib.off();
+          ledRed.off();
         }
       }
     }
@@ -357,11 +382,6 @@ void sensorsInit() {
   sensors.on();
   delay(3000); 
 
-  if (firstBoot) {
-
-    firstBoot = 0;    
-  }
-
   // UV
   if (!uv.begin()) {
     Serial.println("Failed to communicate with VEML6075 UV sensor! Please check your wiring.");
@@ -388,30 +408,38 @@ void sensorsInit() {
       return;
     }
   }
-  while (!ccs.available());
-  float t = ccs.calculateTemperature();
-  ccs.setTempOffset(t - 23.0);
 
+  if (firstBoot) {
+    while (!ccs.available());
+    float t = ccs.calculateTemperature();
+    ccs.setTempOffset(t - 23.0);
+
+    firstBoot = 0;    
+  }
+  
   pedo.calibrate();
   error = 0;
 }
 
 void handleWarning() {
   ledRed.on();
+  warning = 1;
+  if (warningVibTimeout < ms) {
+    warningCounter++;
+    warningVibTimeout = millis() + 1000;
+    vib.toggle();
+  }
+  if (warningCounter >= 8) {
+    warningCounter = 0;
+    dismissWarning();
+  }
 }
 
 void dismissWarning() {
   Serial.println("Warning dismissed");
+  warning = 0;
+  warningCounter = 0;
   warningTimeout = millis() + 60000;
   ledRed.off();
   vib.off();
-}
-
-void vibrate(int delayMs, int times) {
-  for (int i = 0; i < times; i++) {
-    vib.on();
-    delay(delayMs);
-    vib.off();
-    delay(delayMs);
-  }
 }
