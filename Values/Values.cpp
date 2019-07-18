@@ -188,7 +188,7 @@ uint16_t Values::getStepGoal(void) {
 	uint8_t LO = EEPROM.read(STEP_GOAL_ADDR_LO);
 	uint16_t HI = EEPROM.read(STEP_GOAL_ADDR_HI);
 	uint16_t goal = (HI << 8) | LO;
-	return stepGoal;
+	return goal;
 }
 
 uint8_t Values::getUVIThresh(void) {

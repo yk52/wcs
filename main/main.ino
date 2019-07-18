@@ -27,9 +27,9 @@ Adafruit_CCS811 ccs;
 Adafruit_VEML6075 uv = Adafruit_VEML6075();
 Adafruit_ADXL335 pedo;
 
-InterfaceOut vib(VIBRATION_PIN); //VIBRATION_PIN);
+InterfaceOut vib(VIBRATION_PIN);
 InterfaceOut ledRed(LEDRED_PIN);
-InterfaceOut ledGreen(LEDGREEN_PIN);
+InterfaceOut ledGreen(LEDRED_PIN);  // TODO CHange back to green later
 InterfaceOut ledBlue(LEDBLUE_PIN);
 InterfaceOut sensors(SENSORS_EN_PIN); // auf high schalten nach wakeup
 
@@ -76,9 +76,7 @@ void setup() {
   pinMode(BLUETOOTH_PIN, INPUT);
   
   // Thresholds for sensor values init
-  // values.init();
-  // values.setStepGoal(10);
-  EEPROM.begin(FLASH_SIZE);
+  values.init();
   sensors.on();
   delay(500);
   pedo.calibrate();
@@ -296,8 +294,7 @@ void wakeUp() {
     Serial.print("Step goal: ");
     Serial.println(values.getStepGoal());
     
-    // ledGreen.on();
-    ledRed.on();
+    ledGreen.on();
     sensorsInit();
     setTimeouts();
   }
@@ -367,8 +364,7 @@ void checkButtonState() {
         else {
           // Wake up sensors.
           state = SENSORS_ACTIVE;
-          // ledGreen.on();
-          ledRed.on();
+          ledGreen.on();
           sensorsInit();
           setTimeouts();
         }
