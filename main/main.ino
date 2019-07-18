@@ -34,7 +34,6 @@ InterfaceOut sensors(SENSORS_EN_PIN); // auf high schalten nach wakeup
 
 bool firstBoot = 1;
 bool error = 0;
-bool warning = 0;
 volatile bool checkBT = 0;
 volatile bool checkPower = 0;
 volatile uint32_t powerDebounceTimer = 0;
@@ -45,6 +44,7 @@ volatile uint32_t powerButtonPressed = 0;
 
 // Timers
 uint32_t ms = 0;
+uint32_t warningTimeout = 0;
 uint32_t showFreq = 2000;
 uint32_t sleepTime = 0;
 uint32_t lastEmptied = 0;
@@ -122,7 +122,7 @@ void loop() {
   }
   //__________________________________________________________________
   else if (state == SENSORS_ACTIVE) {
-    if (warning) {
+    if ((warningTimeout > ms) && values.warning) {
       handleWarning();
     }
     
@@ -355,7 +355,7 @@ void bluetoothButtonISR() {
 
 void sensorsInit() {
   sensors.on();
-  delay(1000); 
+  delay(3000); 
 
   if (firstBoot) {
 
@@ -378,16 +378,19 @@ void sensorsInit() {
   else {
     Serial.println("Found CCS811 (Air Quality) sensor");
   }
-  while (!ccs.begin()) {
+  while (error) {
     ledRed.on();
     delay(1000);
     ledRed.off();
     delay(1000);
+    if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
+      state = LIGHT_SLEEP;
+      return;
+    }
   }
   while (!ccs.available());
   float t = ccs.calculateTemperature();
   ccs.setTempOffset(t - 23.0);
-    
 
   pedo.calibrate();
   error = 0;
@@ -399,7 +402,7 @@ void handleWarning() {
 
 void dismissWarning() {
   Serial.println("Warning dismissed");
-  warning = 0;
+  warningTimeout = millis() + 60000;
   ledRed.off();
   vib.off();
 }
