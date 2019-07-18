@@ -10,10 +10,15 @@ BLE_wcs ble;
 Values values;
 std::string sent;
 std::string processed = "prodef";
-  
+
+bool blue = false;
+bool blueInit = false;
+bool blueDeinit = false;
+
+
 void setup() {
   Serial.begin(115200);
-  ble.init("Vitameter joey");
+
 }
 
 void loop() {
@@ -21,40 +26,49 @@ void loop() {
    *  if a ble message from phone is received, process the message with values.processMessage
    *  Depending on return: set thresholds, get thresholds, send data, ...
    */
-  //Serial.println(values.co2Thresh);
-  //if (ble.messageReceived) {
-  if (true) {
+  if (Serial.available()) {
+    Serial.println("serial.available");
+    byte a = Serial.read();
+    Serial.println(a);
+    if (a == '1') {
+      blue = true;
+      blueInit = true;
+    } else if (a == '0') {
+      blue = false;
+      blueDeinit = true;
+    }
+  }
+
+  if (blue) {
+    if (blueInit) {
+      Serial.println("init called");
+      blueInit = false;
+      ble.init("Vitameter joey2");
+    }
+    Serial.println("blue on");
     Serial.print("message sent:   ");
     sent = ble.getMessage();
     Serial.println(sent.c_str());
     processed = values.processMessage(sent);
-
     Serial.print("message processed:   ");
-    Serial.println(processed.c_str());
-    
+    Serial.println(processed.c_str());  
     Serial.print("parameter:   ");
-    Serial.println(values.parameter.c_str());
-    
+    Serial.println(values.parameter.c_str());    
     Serial.print("value is:   ");
     Serial.println(values._value);
-    
-    /*Serial.print("testThresh is ");
-    Serial.println(values.testThresh);*/
-
     ble.write(processed);
-
     Serial.println("");
     Serial.println("");
+  } else {
+    if (blueDeinit) {
+      Serial.println("deinit called");
+      blueDeinit = false;
+      ble.deinit();
+    }
+    Serial.println("blue off");
     Serial.println("");
     Serial.println("");
-
-    //txValue = values.processMessage(ble.getMessage());
-    //if (txValue.compare("DataRequest")) {         
-      // send data
-    //}
-    //Serial.println(txValue.c_str());
-    //ble.write(txValue); 
-   // ble.messageReceived = false;
-  }
+    ble.stopAdvertising();
+  } 
   delay(2000);
 }

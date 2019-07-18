@@ -27,10 +27,15 @@ class BLE_wcs {
 		// member functions
 		std::string getMessage(void);
 		void init(std::string);
+		void deinit();
+		void startAdvertising();
+		void stopAdvertising();
 		void write(std::string);
 		
 		// message received flag
 		bool messageReceived;
+		
+		BLEServer *pServer;
 		
 	private:
 		

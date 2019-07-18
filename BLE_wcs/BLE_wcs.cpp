@@ -50,7 +50,8 @@ void BLE_wcs::init(std::string deviceName)
 	BLEDevice::init(deviceName);
 
 	// Create the BLE Server
-	BLEServer *pServer = BLEDevice::createServer();
+	//BLEServer *pServer = BLEDevice::createServer();
+	pServer = BLEDevice::createServer();
 	pServer->setCallbacks(new MyServerCallbacks());
 
 	// Create the BLE Service
@@ -80,7 +81,22 @@ void BLE_wcs::init(std::string deviceName)
 	pServer->getAdvertising()->start();
 }
 
+void BLE_wcs::startAdvertising()
+{
+	// Stop advertising
+	pServer->getAdvertising()->start();
+}
 
+void BLE_wcs::stopAdvertising()
+{
+	// Stop advertising
+	pServer->getAdvertising()->stop();
+}
+
+void BLE_wcs::deinit()
+{
+	BLEDevice::deinit();
+}	
 
 void BLE_wcs::write(std::string txValue) {
 	pCharacteristic->setValue(txValue);
