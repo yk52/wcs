@@ -4,7 +4,7 @@
     updates by chegewara
 */
 
-#include "C:\Users\Yumi\Desktop\wcs\BLE_wcs\BLE_wcs.h"
+#include <BLE_wcs.h>
 BLECharacteristic *pCharacteristic;
 bool deviceConnected = false;
 bool messageReceived = false;

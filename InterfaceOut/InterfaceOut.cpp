@@ -1,5 +1,5 @@
-#include <Config.h>
-
+#include "C:\Users\Joanna\Documents\MasterESE\3-Semester\WCS\wcs\Config\config.h"
+#include <InterfaceOut.h>
 
 /**************************************************************************/
 /*! 
