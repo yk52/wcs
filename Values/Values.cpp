@@ -532,23 +532,18 @@ std::string Values::prepareData() {
 	 **************************************************************************/
 	data += "Steps: ";
 	
-	
-	
-	co2[CO2_STORAGE_SIZE] = {0};  // in ppm. in flash memory, its divided by 100 to fit in a byte
-		uint8_t co2_idx;
-		uint16_t voc[VOC_STORAGE_SIZE] = {0}; // in ppb, bzw. mg/m3
-		uint8_t voc_idx;
-		uint8_t uvi[UVI_STORAGE_SIZE] = {0};   // UV index
-		uint8_t uvi_idx;
-		float temp[TEMP_STORAGE_SIZE] = {0}; // in degrees
-		uint8_t temp_idx;
-		uint16_t steps;
-	
+	/**************************************************************************
+	 *    						clean up
+	 **************************************************************************/	
 	// set all indices back
 	setCurrentCO2FlashIdx(CO2_FLASH_IDX_START);
 	setCurrentVOCFlashIdx(VOC_FLASH_IDX_START);
 	setCurrentTempFlashIdx(TEMP_FLASH_IDX_START);
 	setCurrentUVIFlashIdx(UVI_FLASH_IDX_START);
+	
+		/**************************************************************************
+	 *    						return
+	 **************************************************************************/
 	return data;
 }
 
