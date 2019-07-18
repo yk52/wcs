@@ -42,11 +42,10 @@ volatile uint32_t btDebounceTimer = 0;
 volatile uint32_t btButtonPressed = 0;
 volatile uint32_t powerButtonPressed = 0;
 
-int warningCounter = 0;
 
 // Timers
 uint32_t ms = 0;
-uint32_t showFreq = 5000;
+uint32_t showFreq = 2000;
 uint32_t sleepTime = 0;
 uint32_t lastEmptied = 0;
 uint32_t pedoTimeout = 0;
@@ -72,7 +71,6 @@ void setup() {
 
   // Thresholds for sensor values init
   values.init();
-
  
   sensors.on();
   delay(500);
@@ -105,7 +103,6 @@ void loop() {
     Serial.print("value is:   ");
     Serial.println(values._value);
     
-
     ble.write(processed);
 
     Serial.println("");
@@ -121,12 +118,12 @@ void loop() {
     }
     */
     values.resetSteps();
-    goDeepSleep();
+    goLightSleep();
   }
   //__________________________________________________________________
   else if (state == SENSORS_ACTIVE) {
     if (warning) {
-      ledRed.on();
+      handleWarning();
     }
     
     if (values.pedoEnable && ms > pedoTimeout) {
@@ -135,7 +132,7 @@ void loop() {
 
       if (goalAchieved) {
         // vibrate in short intervals
-        // vibrate(200, 5);
+        vibrate(200, 5);
       }
       
       // Step registered
@@ -155,18 +152,13 @@ void loop() {
       values.storeUVI(u);
     }
     if (ms > airTimeout) {
-      while (!ccs.available());
-      if (ccs.readData()) {
-        airTimeout += AQ_FREQ;
-        uint16_t c = ccs.geteCO2();
-        uint16_t v = ccs.getTVOC();
-        values.storeCO2(c);
-        values.storeVOC(v);
-        values.storeTemp(ccs.calculateTemperature());
-      }
-      else {
-        error = 1;
-      }
+      ccs.readData();
+      airTimeout += AQ_FREQ;
+      uint16_t c = ccs.geteCO2();
+      uint16_t v = ccs.getTVOC();
+      values.storeCO2(c);
+      values.storeVOC(v);
+      values.storeTemp(ccs.calculateTemperature());
     }
 
     if (ms > showTimeout) {
@@ -197,18 +189,23 @@ void loop() {
       // 1 second Delay to give ESP32 enough time to finish its tasks. Serial communication seems to stop abruptly without finishing when going into sleep.
       // Sleep a second less instead.
       ms = millis();
-      if ((uvTimeout - ms) > 3000) {
-        delay(1000);
-        gpio_wakeup_enable(GPIO_NUM_36, GPIO_INTR_LOW_LEVEL);
-        gpio_wakeup_enable(GPIO_NUM_34, GPIO_INTR_LOW_LEVEL); 
-        esp_sleep_enable_gpio_wakeup();
-        goLightSleepTimeout(uvTimeout - ms - 1000);
-        if (esp_sleep_get_wakeup_cause() == 7) {
-          if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
-            checkPower = 1; 
-          }
-          else if (digitalRead(BLUETOOTH_PIN) == PRESSED_BUTTON_LEVEL) {
-            checkBT = 1; 
+      if (uvTimeout > ms) {
+        uint32_t timeLeft = uvTimeout - ms;
+        if (timeLeft > 2000) {
+          delay(500);
+          gpio_wakeup_enable(GPIO_NUM_36, GPIO_INTR_LOW_LEVEL);
+          gpio_wakeup_enable(GPIO_NUM_34, GPIO_INTR_LOW_LEVEL); 
+          esp_sleep_enable_gpio_wakeup();
+          goLightSleepTimeout(timeLeft - 500);//timeLeft - 1000);
+          if (esp_sleep_get_wakeup_cause() == 7) {
+            if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
+              checkPower = 1; 
+              powerButtonPressed = ms;
+            }
+            else if (digitalRead(BLUETOOTH_PIN) == PRESSED_BUTTON_LEVEL) {
+              checkBT = 1; 
+              btButtonPressed = ms;
+            }
           }
         }
       }
@@ -224,15 +221,16 @@ void goLightSleepTimeout(uint64_t sleepMillis) {
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
 }
 
-void goDeepSleep() {
-  sensors.off();
-  ledGreen.off();
-  ledRed.off();
-  ledBlue.off();
+void goLightSleep() {
   Serial.println("Enter sleep");
   detachInterrupt(digitalPinToInterrupt(POWER_PIN));
   detachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN));
   delay(1000);
+  bleOn = 0;
+  sensors.off();
+  ledGreen.off();
+  ledRed.off();
+  ledBlue.off();
   gpio_wakeup_enable(GPIO_NUM_36, GPIO_INTR_LOW_LEVEL);
   gpio_wakeup_enable(GPIO_NUM_34, GPIO_INTR_LOW_LEVEL);
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
@@ -255,12 +253,10 @@ void wakeUp() {
   if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
     Serial.println("WAKE UP, POWER UP!");
     state = SENSORS_ACTIVE;
-    ledGreen.on();
+    // ledGreen.on();
+    ledRed.on();
     sensorsInit();
-    // values.storeSleepDuration(ms - sleepTime); // Does nothing currently. later store ms - sleepTime
     setTimeouts();
-    Serial.print("Wakeup: ");
-    Serial.println(millis());
   }
   else if (digitalRead(BLUETOOTH_PIN) == PRESSED_BUTTON_LEVEL) {
     Serial.println("ONLY BLUETOOTH");
@@ -302,7 +298,6 @@ void checkButtonState() {
           bleOn = 1;
           ledBlue.on();
           Serial.println("BT on");
-          vibrate(500, 4);
         }
       }
       else if (ms > btButtonPressed + 500) {
@@ -324,7 +319,8 @@ void checkButtonState() {
         else {
           // Wake up sensors.
           state = SENSORS_ACTIVE;
-          ledGreen.on();
+          // ledGreen.on();
+          ledRed.on();
           sensorsInit();
           // values.storeSleepDuration(ms - sleepTime); // Does nothing currently. later store ms - sleepTime
           setTimeouts();
@@ -332,9 +328,8 @@ void checkButtonState() {
       }
       else if (ms > powerButtonPressed + 500) {
         if (digitalRead(POWER_PIN) == !PRESSED_BUTTON_LEVEL) {
-          error = 0;
           checkPower = 0;
-          Serial.println("Warning dismissed");
+          dismissWarning();
         }
       }
     }
@@ -360,7 +355,13 @@ void bluetoothButtonISR() {
 
 void sensorsInit() {
   sensors.on();
-  delay(1000);
+  delay(1000); 
+
+  if (firstBoot) {
+
+    firstBoot = 0;    
+  }
+
   // UV
   if (!uv.begin()) {
     Serial.println("Failed to communicate with VEML6075 UV sensor! Please check your wiring.");
@@ -369,7 +370,6 @@ void sensorsInit() {
   else {
     Serial.println("Found VEML6075 (UV) sensor");
   }
-  
   // Air Quality init
   if (!ccs.begin()) {
     Serial.println("Failed to start Air Quality sensor! Please check your wiring.");
@@ -377,31 +377,31 @@ void sensorsInit() {
   }
   else {
     Serial.println("Found CCS811 (Air Quality) sensor");
-  }  
-
-  if (firstBoot) {
-    //calibrate temperature sensor on CCS811
-    while (!ccs.available());
-    float t = ccs.calculateTemperature();
-    ccs.setTempOffset(t - 23.0);
-    firstBoot = 0;    
   }
-  pedo.calibrate();
-  while (error) {
-    // Try to find CCS811 again
+  while (!ccs.begin()) {
     ledRed.on();
     delay(1000);
     ledRed.off();
     delay(1000);
-    if (ccs.begin()) {
-      break;
-    }
   }
+  while (!ccs.available());
+  float t = ccs.calculateTemperature();
+  ccs.setTempOffset(t - 23.0);
+    
+
+  pedo.calibrate();
   error = 0;
 }
 
 void handleWarning() {
   ledRed.on();
+}
+
+void dismissWarning() {
+  Serial.println("Warning dismissed");
+  warning = 0;
+  ledRed.off();
+  vib.off();
 }
 
 void vibrate(int delayMs, int times) {
