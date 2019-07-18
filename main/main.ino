@@ -46,7 +46,7 @@ int warningCounter = 0;
 
 // Timers
 uint32_t ms = 0;
-uint32_t showFreq = 10000;
+uint32_t showFreq = 5000;
 uint32_t sleepTime = 0;
 uint32_t lastEmptied = 0;
 uint32_t pedoTimeout = 0;
@@ -73,19 +73,6 @@ void setup() {
   // Thresholds for sensor values init
   values.init();
 
-  // TEST PURPOSES
-
-  Serial.println("Start LED testing. Press POWER_BUTTON");
-  while(digitalRead(POWER_PIN) != PRESSED_BUTTON_LEVEL);
-  ledRed.on();
-  ledBlue.on();
-  ledGreen.on();
-
-  Serial.println("Press to continue. LEDs will turn off");
-  while(digitalRead(BLUETOOTH_PIN) != PRESSED_BUTTON_LEVEL);
-  ledRed.off();
-  ledBlue.off();
-  ledGreen.off();
  
   sensors.on();
   delay(500);
@@ -210,11 +197,12 @@ void loop() {
       // 1 second Delay to give ESP32 enough time to finish its tasks. Serial communication seems to stop abruptly without finishing when going into sleep.
       // Sleep a second less instead.
       ms = millis();
-      if (uvTimeout > ms) {
+      if ((uvTimeout - ms) > 3000) {
+        delay(1000);
         gpio_wakeup_enable(GPIO_NUM_36, GPIO_INTR_LOW_LEVEL);
         gpio_wakeup_enable(GPIO_NUM_34, GPIO_INTR_LOW_LEVEL); 
         esp_sleep_enable_gpio_wakeup();
-        goLightSleepTimeout(uvTimeout - ms);
+        goLightSleepTimeout(uvTimeout - ms - 1000);
         if (esp_sleep_get_wakeup_cause() == 7) {
           if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
             checkPower = 1; 
