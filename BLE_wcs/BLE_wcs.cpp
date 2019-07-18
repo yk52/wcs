@@ -84,7 +84,9 @@ void BLE_wcs::init(std::string deviceName)
 	pServer->getAdvertising()->start();
 }
 
-
+void BLE_wcs::deinit() {
+	BLEDevice::deinit();
+}
 
 void BLE_wcs::write(std::string txValue) {
 	pCharacteristic->setValue(txValue);

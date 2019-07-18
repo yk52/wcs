@@ -1,7 +1,7 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#define DEEP_SLEEP			0
+#define LIGHT_SLEEP			0
 #define SENSORS_ACTIVE		1
 #define ONLY_BT				2
 
@@ -63,13 +63,13 @@
 #define TEMP_OFFSET				25
 
 // Version 10 //Pins as in WCS_Version5
-#define	VIBRATION_PIN		35// 17
-#define LEDBLUE_PIN			23// 26	// Bluetooth
-#define	LEDGREEN_PIN		39//27	// Power
-#define LEDRED_PIN			15// 14	// Warning
+#define	VIBRATION_PIN		2
+#define LEDBLUE_PIN			23 // Bluetooth
+#define	LEDGREEN_PIN		39 // Power
+#define LEDRED_PIN			15 // Warning
 // Button pins
-#define POWER_PIN			36//4
-#define BLUETOOTH_PIN		34//2
+#define POWER_PIN			36
+#define BLUETOOTH_PIN		34
 #define PRESSED_BUTTON_LEVEL	0
 
 #define SENSORS_EN_PIN		13
@@ -81,8 +81,8 @@
 
 // Frequencies
 #define PEDO_FREQ			30
-#define AQ_FREQ				60000 // 600000	// 10 min
-#define UV_FREQ				60000	// 1 min
+#define AQ_FREQ				10000 // 600000	// 10 min
+#define UV_FREQ				10000	// 1 min
 
 // Hold info for 150 minutes
 #define CO2_STORAGE_SIZE	1000
