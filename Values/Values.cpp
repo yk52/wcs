@@ -19,46 +19,52 @@ uint16_t voc_idx = 0;
 uint16_t uvi_idx = 0;
 uint16_t temp_idx = 0;
 
+bool warnUVI = 1;
+bool warnTemp = 1;
+bool warnVOC = 1;
+bool warnCO2 = 1;
+
 uint8_t uviDuration = 0;
 bool pedoEnable = 0;
 
 void Values::init(void) {
 	EEPROM.begin(FLASH_SIZE);
-	uint8_t thresholdsSet = EEPROM.read(VALUES_SET_ADDR);
+	// uint8_t thresholdsSet = EEPROM.read(VALUES_SET_ADDR);
 
-	if (thresholdsSet != 1) {
-		// Values initiated flag
-		EEPROM.write(VALUES_SET_ADDR, 1);
-		// Set thresholds
-		EEPROM.write(CO2_THRESH_ADDR, 14); // 14 (*100) = 1400
-		co2Thresh = 1400;
-		EEPROM.write(VOC_THRESH_ADDR, 1);
-		vocThresh = 50;
-		EEPROM.write(UVI_THRESH_ADDR, 8);
-		uviThresh = 8;
-		EEPROM.write(UVI_DUR_THRESH_ADDR, 10);
-		uviDurationThresh = 10;
-		EEPROM.write(TEMP_THRESH_ADDR, 30);
-		tempThresh = 35;
-		EEPROM.write(STEP_GOAL_ADDR_HI, 0x27); // 0x2710 = 10000
-		EEPROM.write(STEP_GOAL_ADDR_LO, 0x10);
-		stepGoal = 10000;
+	//if (thresholdsSet != 1) {
+	// Values initiated flag
+	EEPROM.write(VALUES_SET_ADDR, 1);
+	// Set thresholds
+	EEPROM.write(CO2_THRESH_ADDR, 14); // 14 (*100) = 1400
+	co2Thresh = 1400;
+	EEPROM.write(VOC_THRESH_ADDR, 50);
+	vocThresh = 50;
+	EEPROM.write(UVI_THRESH_ADDR, 8);
+	uviThresh = 8;
+	EEPROM.write(UVI_DUR_THRESH_ADDR, 10);
+	uviDurationThresh = 10;
+	EEPROM.write(TEMP_THRESH_ADDR, 35);
+	tempThresh = 35;
+	EEPROM.write(STEP_GOAL_ADDR_HI, 0x27); // 0x2710 = 10000
+	EEPROM.write(STEP_GOAL_ADDR_LO, 0x10);
+	stepGoal = 10000;
 
-		// Set Flash storage indices
-		EEPROM.write(CO2_FLASH_IDX_ADDR_LO, CO2_FLASH_IDX_START & 0xFF);
-		EEPROM.write(CO2_FLASH_IDX_ADDR_HI, (CO2_FLASH_IDX_START >> 8) & 0xFF);
+	// Set Flash storage indices
+	EEPROM.write(CO2_FLASH_IDX_ADDR_LO, CO2_FLASH_IDX_START & 0xFF);
+	EEPROM.write(CO2_FLASH_IDX_ADDR_HI, (CO2_FLASH_IDX_START >> 8) & 0xFF);
 
-		EEPROM.write(VOC_FLASH_IDX_ADDR_LO, VOC_FLASH_IDX_START & 0xFF);
-		EEPROM.write(VOC_FLASH_IDX_ADDR_HI, (VOC_FLASH_IDX_START >> 8) & 0xFF);
+	EEPROM.write(VOC_FLASH_IDX_ADDR_LO, VOC_FLASH_IDX_START & 0xFF);
+	EEPROM.write(VOC_FLASH_IDX_ADDR_HI, (VOC_FLASH_IDX_START >> 8) & 0xFF);
 
-		EEPROM.write(UVI_FLASH_IDX_ADDR_LO, UVI_FLASH_IDX_START & 0xFF);
-		EEPROM.write(UVI_FLASH_IDX_ADDR_HI, (UVI_FLASH_IDX_START >> 8) & 0xFF);
+	EEPROM.write(UVI_FLASH_IDX_ADDR_LO, UVI_FLASH_IDX_START & 0xFF);
+	EEPROM.write(UVI_FLASH_IDX_ADDR_HI, (UVI_FLASH_IDX_START >> 8) & 0xFF);
 
-		EEPROM.write(TEMP_FLASH_IDX_ADDR_LO, TEMP_FLASH_IDX_START & 0xFF);
-		EEPROM.write(TEMP_FLASH_IDX_ADDR_HI, (TEMP_FLASH_IDX_START >> 8) & 0xFF);
+	EEPROM.write(TEMP_FLASH_IDX_ADDR_LO, TEMP_FLASH_IDX_START & 0xFF);
+	EEPROM.write(TEMP_FLASH_IDX_ADDR_HI, (TEMP_FLASH_IDX_START >> 8) & 0xFF);
 
-		EEPROM.commit();
-	}
+	EEPROM.commit();
+	// }
+	/*
 	else if (thresholdsSet == 1) {
 		co2Thresh = getCO2Thresh();
 		vocThresh = getVOCThresh();
@@ -66,7 +72,7 @@ void Values::init(void) {
 		uviThresh = getUVIThresh();
 		uviDurationThresh = getUVIDurationThresh();
 		stepGoal = getStepGoal();
-	}
+	}*/
 }
 
 
@@ -313,7 +319,7 @@ void Values::setUVIDurationThresh(uint8_t val) {
 
 void Values::storeCO2(uint16_t val) {
 	co2[co2_idx++] = val;
-	if (val >= co2Thresh) {
+	if (warnCO2 && val >= co2Thresh) {
 		setCO2Flag();
 	}
 	else {
@@ -323,7 +329,7 @@ void Values::storeCO2(uint16_t val) {
 
 void Values::storeVOC(uint16_t val) {
 	voc[voc_idx++] = val;
-	if (val >= vocThresh) {
+	if (warnVOC && val >= vocThresh) {
 		setVOCFlag();
 	}
 	else {
@@ -333,7 +339,7 @@ void Values::storeVOC(uint16_t val) {
 
 void Values::storeTemp(float val) {
 	temp[temp_idx++] = val;
-	if (val >= tempThresh) {
+	if (warnTemp && val >= tempThresh) {
 		setTempFlag();
 	}
 	else {
@@ -355,12 +361,6 @@ void Values::resetSteps(void) {
 	steps = 0;
 }
 
-void Values::storeSleepDuration(uint32_t duration) {
-
-}
-
-
-
 
 
 void Values::storeUVI(uint8_t val) {
@@ -368,8 +368,11 @@ void Values::storeUVI(uint8_t val) {
 	if (val >= uviThresh) {
 		uviDuration++;
 	}
-	if (uviDuration >= uviDurationThresh) {
+	if (warnUVI && uviDuration >= uviDurationThresh) {
 		setUVIFlag();
+	}
+	else {
+		clearUVIFlag();
 	}
 }
 

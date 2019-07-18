@@ -12,10 +12,10 @@
 #define CO2_THRESH_ADDR			1
 #define UVI_DUR_THRESH_ADDR		2
 #define UVI_THRESH_ADDR			3
-#define VOC_THRESH_ADDR			3
-#define TEMP_THRESH_ADDR		4
-#define STEP_GOAL_ADDR_LO		5
-#define STEP_GOAL_ADDR_HI		6
+#define VOC_THRESH_ADDR			4
+#define TEMP_THRESH_ADDR		5
+#define STEP_GOAL_ADDR_LO		6
+#define STEP_GOAL_ADDR_HI		7
 
 // Store deep sleep duration in ms
 #define SLEEP_DUR_IDX_START		3001
@@ -98,7 +98,7 @@
 #define PEDO_CALIBRATION_SAMPLE_SIZE 15
 #define PEDO_SAMPLE_SIZE 		15
 #define ACCL				85000
-#define WAIT_AFTER_STEP		300
+#define WAIT_AFTER_STEP		400
 
 
 

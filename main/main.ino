@@ -40,7 +40,7 @@ volatile uint32_t powerDebounceTimer = 0;
 volatile uint32_t btDebounceTimer = 0;
 volatile uint32_t btButtonPressed = 0;
 volatile uint32_t powerButtonPressed = 0;
-
+uint32_t bleTimer = 0;
 
 // Timers
 uint32_t ms = 0;
@@ -78,23 +78,11 @@ void setup() {
   // Thresholds for sensor values init
 
   values.init();
-
-  Serial.print("UVI thresh: ");
-  Serial.println(EEPROM.read(UVI_THRESH_ADDR));
-  Serial.print("CO2 thresh: ");
-  Serial.println(EEPROM.read(CO2_THRESH_ADDR));
-  Serial.print("VOC thresh: ");
-  Serial.println(EEPROM.read(VOC_THRESH_ADDR));
-  Serial.print("Temp thresh: ");
-  Serial.println(EEPROM.read(TEMP_THRESH_ADDR));
-
-  values.setStepGoal(1000);
-  Serial.print("Step goal: ");
-  Serial.println(values.getStepGoal());
+  values.setStepGoal(10);
   sensors.on();
   delay(500);
   pedo.calibrate();
-  // values.pedoEnable = 1;
+  values.pedoEnable = 1;
   // sensors.off(); // TODO ADD AGAIN LATER
 }
 
@@ -109,26 +97,29 @@ void loop() {
   }
   //___Bluetooth communication on ____________________________________
   if (bleOn) {
-    Serial.print("message sent:   ");
-    sent = ble.getMessage();
-    Serial.println(sent.c_str());
-    processed = values.processMessage(sent);
-
-    Serial.print("message processed:   ");
-    Serial.println(processed.c_str());
-    
-    Serial.print("parameter:   ");
-    Serial.println(values.parameter.c_str());
-    
-    Serial.print("value is:   ");
-    Serial.println(values._value);
-    
-    ble.write(processed);
-
-    Serial.println("");
-    Serial.println("");
-    Serial.println("");
-    Serial.println("");
+    if (ms > bleTimer) {
+      bleTimer = ms + 3000;
+      Serial.print("message sent:   ");
+      sent = ble.getMessage();
+      Serial.println(sent.c_str());
+      processed = values.processMessage(sent);
+  
+      Serial.print("message processed:   ");
+      Serial.println(processed.c_str());
+      
+      Serial.print("parameter:   ");
+      Serial.println(values.parameter.c_str());
+      
+      Serial.print("value is:   ");
+      Serial.println(values._value);
+      
+      ble.write(processed);
+  
+      Serial.println("");
+      Serial.println("");
+      Serial.println("");
+      Serial.println("");
+    }
   }
   //__________________________________________________________________
   if (state == LIGHT_SLEEP) {
@@ -142,7 +133,7 @@ void loop() {
   }
   //__________________________________________________________________
   else if (state == SENSORS_ACTIVE) {
-    if ((warningTimeout < ms) && values.warning) {
+    if (values.warning) {
       handleWarning();
     }
     if (values.pedoEnable && ms > pedoTimeout) {
@@ -157,7 +148,7 @@ void loop() {
           goalVib = 1;
           vibTimeout = ms;
         }
-        pedoTimeout += WAIT_AFTER_STEP;
+        pedoTimeout = ms + WAIT_AFTER_STEP;
         pedo.flag = 0;
       }
       else {
@@ -165,10 +156,10 @@ void loop() {
       }
       if (goalVib && ms > vibTimeout) {
         vib.toggle();
-        vibTimeout += 500;
+        vibTimeout = ms + 200;
         vibCounter++;
       }
-      if (vibCounter >= 4) {
+      if (vibCounter > 4) {
         goalVib = 0;
         vibCounter= 0;
         vib.off();
@@ -256,11 +247,11 @@ void goLightSleep() {
   detachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN));
   delay(1000);
   bleOn = 0;
+  dismissWarning();
   // sensors.off();
   ledGreen.off();
   ledRed.off();
   ledBlue.off();
-  vib.off();
   gpio_wakeup_enable(GPIO_NUM_36, GPIO_INTR_LOW_LEVEL);
   gpio_wakeup_enable(GPIO_NUM_34, GPIO_INTR_LOW_LEVEL);
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
@@ -280,10 +271,23 @@ void setTimeouts() {
 void wakeUp() {
   // If button still pressed after 1 second
   delay(1000);
+  
   if (digitalRead(POWER_PIN) == PRESSED_BUTTON_LEVEL) {
     Serial.println("WAKE UP, POWER UP!");
     Serial.println(values.getStepGoal());
     state = SENSORS_ACTIVE;
+    Serial.print("UVI thresh: ");
+    Serial.println(EEPROM.read(UVI_THRESH_ADDR));
+    Serial.print("CO2 thresh: ");
+    Serial.println(EEPROM.read(CO2_THRESH_ADDR));
+    Serial.print("VOC thresh: ");
+    Serial.println(EEPROM.read(VOC_THRESH_ADDR));
+    Serial.print("Temp thresh: ");
+    Serial.println(EEPROM.read(TEMP_THRESH_ADDR));
+  
+    Serial.print("Step goal: ");
+    Serial.println(values.getStepGoal());
+    
     // ledGreen.on();
     ledRed.on();
     sensorsInit();
@@ -423,7 +427,6 @@ void sensorsInit() {
     while (!ccs.available());
     float t = ccs.calculateTemperature();
     ccs.setTempOffset(t - 23.0);
-
     firstBoot = 0;    
   }
   
@@ -436,16 +439,31 @@ void handleWarning() {
   warning = 1;
   if (warningVibTimeout < ms) {
     warningCounter++;
-    warningVibTimeout = millis() + 1000;
+    warningVibTimeout = millis() + 500;
     vib.toggle();
   }
-  if (warningCounter >= 8) {
-    warningCounter = 0;
+  if (warningCounter >= 6) {
     dismissWarning();
   }
 }
 
 void dismissWarning() {
+  if (getUVIFlag) {
+    values.warnUVI = 0;
+    values.clearUVIFlag();
+  }
+  else if (getTempFlag) {
+    values.warnTemp = 0;
+    values.clearTempFlag();
+  }
+  else if (getVOCFlag) {
+    values.warnVOC = 0;
+    values.clearVOCFlag();
+  }
+  else if (getCO2Flag) {
+    values.warnCO2 = 0;
+    values.clearCO2Flag();
+  }
   Serial.println("Warning dismissed");
   warning = 0;
   warningCounter = 0;

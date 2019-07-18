@@ -35,6 +35,10 @@ class Values {
 		// Each bit/flag stands for one warning. Flag is set to 1 if value exceeded.
 		// x | x | CO2 (4)| VOC (3)| TEMP (2)| UVI (1)| STEPS (0)|
 		uint8_t warning = 0;
+		bool warnUVI;
+		bool warnTemp;
+		bool warnVOC;
+		bool warnCO2;
 		uint8_t stepMask = 0x01;
 		uint8_t uviMask = 0x02;
 		uint8_t tempMask = 0x04;
@@ -42,7 +46,6 @@ class Values {
 		uint8_t co2Mask = 0x10;
 
 		void init(void);
-		void storeSleepDuration(uint32_t);
 
 		void setUVIFlag(void);
 		void setStepFlag(void);
