@@ -76,8 +76,9 @@ void setup() {
   pinMode(BLUETOOTH_PIN, INPUT);
   
   // Thresholds for sensor values init
-  values.init();
-  values.setStepGoal(10);
+  // values.init();
+  // values.setStepGoal(10);
+  EEPROM.begin(FLASH_SIZE);
   sensors.on();
   delay(500);
   pedo.calibrate();
@@ -347,10 +348,11 @@ void checkButtonState() {
         if (digitalRead(BLUETOOTH_PIN) == !PRESSED_BUTTON_LEVEL) {
           checkBT = 0;
           Serial.println("BT nevermind");
+          if (values.warning) {
+            dismissWarning();
+          }
         }
-        if (values.warning) {
-          dismissWarning();
-        }
+
       }
     }
   }
@@ -443,7 +445,7 @@ void handleWarning() {
     warningVibTimeout = millis() + 500;
     vib.toggle();
   }
-  if (warningCounter >= 8) {
+  if (warningCounter >= 10) {
     dismissWarning();
   }
 }

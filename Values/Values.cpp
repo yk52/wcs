@@ -29,42 +29,42 @@ bool pedoEnable = 0;
 
 void Values::init(void) {
 	EEPROM.begin(FLASH_SIZE);
-	// uint8_t thresholdsSet = EEPROM.read(VALUES_SET_ADDR);
+	uint8_t thresholdsSet = EEPROM.read(VALUES_SET_ADDR);
 
-	//if (thresholdsSet != 1) {
-	// Values initiated flag
-	EEPROM.write(VALUES_SET_ADDR, 1);
-	// Set thresholds
-	EEPROM.write(CO2_THRESH_ADDR, 14); // 14 (*100) = 1400
-	co2Thresh = 1400;
-	EEPROM.write(VOC_THRESH_ADDR, 50);
-	vocThresh = 50;
-	EEPROM.write(UVI_THRESH_ADDR, 8);
-	uviThresh = 8;
-	EEPROM.write(UVI_DUR_THRESH_ADDR, 10);
-	uviDurationThresh = 10;
-	EEPROM.write(TEMP_THRESH_ADDR, 35);
-	tempThresh = 35;
-	EEPROM.write(STEP_GOAL_ADDR_HI, 0x27); // 0x2710 = 10000
-	EEPROM.write(STEP_GOAL_ADDR_LO, 0x10);
-	stepGoal = 10000;
+	if (thresholdsSet != 1) {
+		// Values initiated flag
+		EEPROM.write(VALUES_SET_ADDR, 1);
+		// Set thresholds
+		EEPROM.write(CO2_THRESH_ADDR, 14); // 14 (*100) = 1400
+		co2Thresh = 1400;
+		EEPROM.write(VOC_THRESH_ADDR, 50);
+		vocThresh = 50;
+		EEPROM.write(UVI_THRESH_ADDR, 8);
+		uviThresh = 8;
+		EEPROM.write(UVI_DUR_THRESH_ADDR, 10);
+		uviDurationThresh = 10;
+		EEPROM.write(TEMP_THRESH_ADDR, 35);
+		tempThresh = 35;
+		EEPROM.write(STEP_GOAL_ADDR_HI, 0x27); // 0x2710 = 10000
+		EEPROM.write(STEP_GOAL_ADDR_LO, 0x10);
+		stepGoal = 10000;
 
-	// Set Flash storage indices
-	EEPROM.write(CO2_FLASH_IDX_ADDR_LO, CO2_FLASH_IDX_START & 0xFF);
-	EEPROM.write(CO2_FLASH_IDX_ADDR_HI, (CO2_FLASH_IDX_START >> 8) & 0xFF);
+		// Set Flash storage indices
+		EEPROM.write(CO2_FLASH_IDX_ADDR_LO, CO2_FLASH_IDX_START & 0xFF);
+		EEPROM.write(CO2_FLASH_IDX_ADDR_HI, (CO2_FLASH_IDX_START >> 8) & 0xFF);
 
-	EEPROM.write(VOC_FLASH_IDX_ADDR_LO, VOC_FLASH_IDX_START & 0xFF);
-	EEPROM.write(VOC_FLASH_IDX_ADDR_HI, (VOC_FLASH_IDX_START >> 8) & 0xFF);
+		EEPROM.write(VOC_FLASH_IDX_ADDR_LO, VOC_FLASH_IDX_START & 0xFF);
+		EEPROM.write(VOC_FLASH_IDX_ADDR_HI, (VOC_FLASH_IDX_START >> 8) & 0xFF);
 
-	EEPROM.write(UVI_FLASH_IDX_ADDR_LO, UVI_FLASH_IDX_START & 0xFF);
-	EEPROM.write(UVI_FLASH_IDX_ADDR_HI, (UVI_FLASH_IDX_START >> 8) & 0xFF);
+		EEPROM.write(UVI_FLASH_IDX_ADDR_LO, UVI_FLASH_IDX_START & 0xFF);
+		EEPROM.write(UVI_FLASH_IDX_ADDR_HI, (UVI_FLASH_IDX_START >> 8) & 0xFF);
 
-	EEPROM.write(TEMP_FLASH_IDX_ADDR_LO, TEMP_FLASH_IDX_START & 0xFF);
-	EEPROM.write(TEMP_FLASH_IDX_ADDR_HI, (TEMP_FLASH_IDX_START >> 8) & 0xFF);
+		EEPROM.write(TEMP_FLASH_IDX_ADDR_LO, TEMP_FLASH_IDX_START & 0xFF);
+		EEPROM.write(TEMP_FLASH_IDX_ADDR_HI, (TEMP_FLASH_IDX_START >> 8) & 0xFF);
 
-	EEPROM.commit();
-	// }
-	/*
+		EEPROM.commit();
+	}
+
 	else if (thresholdsSet == 1) {
 		co2Thresh = getCO2Thresh();
 		vocThresh = getVOCThresh();
@@ -72,7 +72,7 @@ void Values::init(void) {
 		uviThresh = getUVIThresh();
 		uviDurationThresh = getUVIDurationThresh();
 		stepGoal = getStepGoal();
-	}*/
+	}
 }
 
 
