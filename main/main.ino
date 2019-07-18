@@ -12,7 +12,7 @@
 #include <Adafruit_ADXL335.h>
 #include <InterfaceOut.h>
 #include <Values.h>
-#include <Config.h>
+#include "C:\Users\Joanna\Documents\MasterESE\3-Semester\WCS\wcs\Config\config.h"
 
 uint8_t state = LIGHT_SLEEP;
 

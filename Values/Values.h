@@ -5,7 +5,7 @@
 
 // #include "WProgram.h"
 
-#include <Config.h>
+#include "C:\Users\Joanna\Documents\MasterESE\3-Semester\WCS\wcs\Config\config.h"
 #include <EEPROM.h>
 #include <stdio.h>
 using namespace std;

@@ -24,10 +24,7 @@
 #define IDX_BEFORE_SLEEP_START	3401
 #define IDX_BEFORE_SLEEP_STOP	3800
 
-#define SLEEP_DUR_ADDR_LO		50
-#define SLEEP_DUR_ADDR_HI		51
-#define IDX_BEFORE_SLEEP_ADDR_LO	52
-#define IDX_BEFORE_SLEEP_ADDR_LO	53
+
 
 // Store current FLASH storage index before going to sleep and every 150 min
 // 2 Bytes necessary because index <= 1000

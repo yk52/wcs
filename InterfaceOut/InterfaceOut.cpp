@@ -1,4 +1,4 @@
-#include "C:\Users\Yumi\Desktop\wcs\InterfaceOut\InterfaceOut.h"
+#include <Config.h>
 
 
 /**************************************************************************/
