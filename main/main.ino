@@ -393,6 +393,9 @@ void sensorsInit() {
     delay(1000);
     ledRed.off();
     delay(1000);
+    if (ccs.begin()) {
+      break;
+    }
   }
   error = 0;
 }
