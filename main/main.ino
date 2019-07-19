@@ -95,7 +95,7 @@ void loop() {
   }
 
   if (ms > warningTimeout) {
-    Serial.println("CO2, TVOC, Temp reactivated");
+    Serial.println("CO2, TVOC, Temp Warnings reactivated");
     Serial.println();
     values.warnCO2 = 1;
     values.warnVOC = 1;

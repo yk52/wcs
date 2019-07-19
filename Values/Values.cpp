@@ -27,6 +27,8 @@ bool warnCO2 = 1;
 uint8_t uviDuration = 0;
 bool pedoEnable = 0;
 
+
+
 void Values::init(void) {
 	EEPROM.begin(FLASH_SIZE);
 	uint8_t thresholdsSet = EEPROM.read(VALUES_SET_ADDR);

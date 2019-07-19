@@ -7,6 +7,7 @@
 
 #define BAUDRATE			9600
 
+// FLASH_____________________
 #define FLASH_SIZE			3000000 // 3 MB
 #define VALUES_SET_ADDR			0
 #define CO2_THRESH_ADDR			1
@@ -17,41 +18,48 @@
 #define STEP_GOAL_ADDR_LO		6
 #define STEP_GOAL_ADDR_HI		7
 
+// Store current FLASH storage index before going to sleep and every 150 min
+// 2 Bytes necessary because index <= 1000
+#define STEPS_FLASH_ADDR_LO			8
+#define STEPS_FLASH_ADDR_HI			9
+#define CO2_FLASH_IDX_ADDR_LO		10
+#define CO2_FLASH_IDX_ADDR_HI		11
+#define VOC_FLASH_IDX_ADDR_LO		12
+#define VOC_FLASH_IDX_ADDR_HI		13
+#define UVI_FLASH_IDX_ADDR_LO		14
+#define UVI_FLASH_IDX_ADDR_HI		15
+#define TEMP_FLASH_IDX_ADDR_LO		16
+#define TEMP_FLASH_IDX_ADDR_HI		17
+
+#define SLEEP_DUR_ADDR_LO		30
+#define SLEEP_DUR_ADDR_HI		31
+#define IDX_BEFORE_SLEEP_ADDR_LO	32
+#define IDX_BEFORE_SLEEP_ADDR_LO	33
+
+/*
 // Store deep sleep duration in ms
 #define SLEEP_DUR_IDX_START		3001
 #define SLEEP_DUR_IDX_STOP		3400
 // Store index of last sensor measurement before deep sleep happened
 #define IDX_BEFORE_SLEEP_START	3401
 #define IDX_BEFORE_SLEEP_STOP	3800
+*/
 
-#define SLEEP_DUR_ADDR_LO		50
-#define SLEEP_DUR_ADDR_HI		51
-#define IDX_BEFORE_SLEEP_ADDR_LO	52
-#define IDX_BEFORE_SLEEP_ADDR_LO	53
 
-// Store current FLASH storage index before going to sleep and every 150 min
-// 2 Bytes necessary because index <= 1000
-#define STEPS_FLASH_ADDR_LO			90
-#define STEPS_FLASH_ADDR_HI			91
-#define CO2_FLASH_IDX_ADDR_LO		92
-#define CO2_FLASH_IDX_ADDR_HI		93
-#define VOC_FLASH_IDX_ADDR_LO		94
-#define VOC_FLASH_IDX_ADDR_HI		95
-#define UVI_FLASH_IDX_ADDR_LO		96
-#define UVI_FLASH_IDX_ADDR_HI		97
-#define TEMP_FLASH_IDX_ADDR_LO		98
-#define TEMP_FLASH_IDX_ADDR_HI		99
 
-#define CO2_FLASH_IDX_START			101
-#define CO2_FLASH_IDX_STOP			500
-#define VOC_FLASH_IDX_START			501
-#define VOC_FLASH_IDX_STOP		1000
-#define UVI_FLASH_IDX_START		1001
-#define UVI_FLASH_IDX_STOP		1500
-#define TEMP_FLASH_IDX_START	1501
-#define TEMP_FLASH_IDX_STOP		2000
 
-#define STORE_TO_FLASH_AFTER_MS	8400000	// 150 min
+#define CO2_FLASH_IDX_START			1000
+#define CO2_FLASH_IDX_STOP			5999
+#define VOC_FLASH_IDX_START			10000
+#define VOC_FLASH_IDX_STOP		14999
+#define UVI_FLASH_IDX_START		18000
+#define UVI_FLASH_IDX_STOP		22999
+#define TEMP_FLASH_IDX_START	26000
+#define TEMP_FLASH_IDX_STOP		50999
+
+#define STORE_TO_FLASH_AFTER_MS	7200000	// 120 min
+
+// _____________________
 
 // Threshold durations for different skin types (min)
 #define SKIN_TYPE_1				10
