@@ -68,7 +68,6 @@ void loop() {
     Serial.println("blue off");
     Serial.println("");
     Serial.println("");
-    ble.deinit();
   } 
   delay(2000);
 }
