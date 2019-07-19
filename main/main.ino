@@ -68,7 +68,7 @@ void loop() {
     Serial.println("blue off");
     Serial.println("");
     Serial.println("");
-    ble.stopAdvertising();
+    ble.deinit();
   } 
   delay(2000);
 }
