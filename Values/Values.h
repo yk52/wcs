@@ -45,6 +45,7 @@ class Values {
 		uint8_t vocMask = 0x08;
 		uint8_t co2Mask = 0x10;
 
+		void setFlashIndexToStart(void);
 		void init(void);
 
 		void setUVIFlag(void);
