@@ -44,7 +44,6 @@ volatile uint32_t powerButtonPressed = 0;
 
 // Timers
 uint32_t ms = 0;
-bool warning = 0;
 uint32_t warningTimeout = 0;
 uint8_t warningCounter = 0;
 uint32_t warningVibTimeout = 0;
@@ -80,8 +79,9 @@ void setup() {
   sensors.on();
   delay(500);
   pedo.calibrate();
-  // values.pedoEnable = 1;
+  values.pedoEnable = 1;
   // sensors.off(); // TODO ADD AGAIN LATER
+  ble.init("VITAMETER MAIN"); // TODO delete later
 }
 
 
@@ -95,6 +95,8 @@ void loop() {
   }
 
   if (ms > warningTimeout) {
+    Serial.println("CO2, TVOC, Temp reactivated");
+    Serial.println();
     values.warnCO2 = 1;
     values.warnVOC = 1;
     values.warnTemp = 1;
@@ -122,8 +124,7 @@ void loop() {
   
       Serial.println("");
       Serial.println("");
-      Serial.println("");
-      Serial.println("");
+
     }
   }
   //__________________________________________________________________
@@ -140,6 +141,9 @@ void loop() {
   else if (state == SENSORS_ACTIVE) {
     if (values.warning) {
       handleWarning();
+    }
+    else {
+      warningCounter = 0;
     }
     if (values.pedoEnable && ms > pedoTimeout) {
       uint16_t x = pedo.getPedo();
@@ -187,20 +191,22 @@ void loop() {
     }
 
     if (ms > showTimeout) {
-      Serial.print("CO2_idx: ");
+      Serial.print("Measurement number: ");
       Serial.println(values.co2_idx);
-      Serial.print("UV_idx: ");
-      Serial.println(values.uvi_idx);
+
       Serial.print("CO2: ");
       Serial.println(values.getLastCO2());
       Serial.print("TVOC: ");
       Serial.println(values.getLastVOC());
       Serial.print("UV: ");
       Serial.println(values.getLastUVI());
+      Serial.println();
+      Serial.println();
+      /*
       Serial.print("Temp: ");
       Serial.println(values.getLastTemp());
       Serial.println();
-
+      */
       showTimeout += showFreq;
     }
     if ((ms - lastEmptied) > STORE_TO_FLASH_AFTER_MS) {
@@ -210,7 +216,7 @@ void loop() {
     
     //_____ Go sleep until next timeout ________________________________
 
-    if (!(checkBT || checkPower) && !values.pedoEnable && !bleOn && !warning) {
+    if (!(checkBT || checkPower) && !values.pedoEnable && !bleOn && !values.warning) {
       // 1 second Delay to give ESP32 enough time to finish its tasks. Serial communication seems to stop abruptly without finishing when going into sleep.
       // Sleep a second less instead.
       ms = millis();
@@ -252,9 +258,8 @@ void goLightSleep() {
   detachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN));
   delay(1000);
   bleOn = 0;
-  ble.deinit();
+  // ble.deinit();
   values.clearAllWarnings();
-  warning = 0;
   vib.off();
   // sensors.off();
   ledGreen.off();
@@ -302,7 +307,7 @@ void wakeUp() {
     Serial.println("ONLY BLUETOOTH");
     ledBlue.on();
     bleOn = 1;
-    ble.init("Vitameter Main");
+    // ble.init("Vitameter Main");
     state = ONLY_BT;
     bleTimer = millis();
   }
@@ -319,13 +324,15 @@ void wakeUp() {
 }
 
 void checkButtonState() {
+  ms = millis();
+  
   // Check Bluetooth button
   if (checkBT) {
     if (ms > btButtonPressed + 1500) {
       checkBT = 0;
       if (digitalRead(BLUETOOTH_PIN) == PRESSED_BUTTON_LEVEL) {
         if (bleOn) {
-            ble.deinit();
+            // ble.deinit();
             bleOn = 0;
             ledBlue.off();
             Serial.println("BT off");
@@ -335,21 +342,19 @@ void checkButtonState() {
             }
           }
         else {
-          ble.init("Vitameter main");
+          // ble.init("Vitameter main");
           bleOn = 1;
           ledBlue.on();
           Serial.println("BT on");
         }
       }
-      else if (ms > btButtonPressed + 500) {
-        if (digitalRead(BLUETOOTH_PIN) == !PRESSED_BUTTON_LEVEL) {
-          checkBT = 0;
-          Serial.println("BT nevermind");
-          if (values.warning) {
-            dismissWarning();
-          }
+    }
+    else if (ms > btButtonPressed + 500) {
+      if (digitalRead(BLUETOOTH_PIN) == !PRESSED_BUTTON_LEVEL) {
+        checkBT = 0;
+        if (values.warning) {
+          dismissWarning();
         }
-
       }
     }
   }
@@ -435,13 +440,13 @@ void sensorsInit() {
 
 void handleWarning() {
   ledRed.on();
-  warning = 1;
-  if (warningVibTimeout < millis()) {
+  ms = millis();
+  if (warningVibTimeout < ms) {
     warningCounter++;
-    warningVibTimeout = millis() + 500;
+    warningVibTimeout = ms + 500;
     vib.toggle();
   }
-  if (warningCounter >= 10) {
+  if (warningCounter >= 12) {
     dismissWarning();
   }
 }
@@ -470,7 +475,6 @@ void dismissWarning() {
   }
   Serial.print("Warning dismissed: ");
   Serial.println(s);
-  warning = 0;
   warningCounter = 0;
   warningTimeout = millis() + 30000;
   ledRed.off();
