@@ -47,7 +47,6 @@ void Values::setFlashIndexToStart(void) {
 void Values::init(void) {
 	EEPROM.begin(FLASH_SIZE);
 	uint8_t thresholdsSet = EEPROM.read(VALUES_SET_ADDR);
-
 	if (thresholdsSet != 1) {
 		// Values initiated flag
 		EEPROM.write(VALUES_SET_ADDR, 1);
@@ -69,7 +68,6 @@ void Values::init(void) {
 		// Set Flash storage indices
 		setFlashIndexToStart();
 
-		EEPROM.commit();
 	}
 
 	else if (thresholdsSet == 1) {

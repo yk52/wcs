@@ -68,7 +68,6 @@
 #define SKIN_TYPE_4				50	// actually >30
 #define SKIN_TYPE_5				90	// actually >90
 
-#define TEMP_OFFSET				25
 
 // Version 10 //Pins as in WCS_Version5
 #define	VIBRATION_PIN		2

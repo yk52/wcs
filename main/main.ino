@@ -21,6 +21,7 @@ std::string sent;
 std::string processed = "prodef";
 BLE_wcs ble;
 uint32_t bleTimer = 0;
+bool bleOn = 0;
 
 Values values;
 Adafruit_CCS811 ccs;
@@ -34,6 +35,7 @@ InterfaceOut ledBlue(LEDBLUE_PIN);
 InterfaceOut sensors(SENSORS_EN_PIN); // auf high schalten nach wakeup
 
 bool firstBoot = 1;
+bool reactivateWarning = 0;
 volatile bool checkBT = 0;
 volatile bool checkPower = 0;
 volatile uint32_t powerDebounceTimer = 0;
@@ -57,7 +59,7 @@ uint32_t pedoTimeout = 0;
 uint32_t uvTimeout = 0;
 uint32_t airTimeout = 0;
 uint32_t showTimeout = 0;
-bool bleOn = 0;
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
@@ -76,12 +78,16 @@ void setup() {
   
   // Thresholds for sensor values init
   values.init();
+  values.warnCO2 = 1;
+  values.warnVOC = 1;
+  values.warnUVI = 1;
   sensors.on();
   delay(500);
   pedo.calibrate();
   values.pedoEnable = 1;
   // sensors.off(); // TODO ADD AGAIN LATER
-  ble.init("VITAMETER MAIN"); // TODO delete later
+  ble.init("Vitameter"); // TODO delete later
+
 }
 
 
@@ -94,12 +100,13 @@ void loop() {
     checkButtonState();
   }
 
-  if (ms > warningTimeout) {
+  if (reactivateWarning && ms > warningTimeout) {
     Serial.println("CO2, TVOC, Temp Warnings reactivated");
     Serial.println();
     values.warnCO2 = 1;
     values.warnVOC = 1;
     values.warnTemp = 1;
+    reactivateWarning = 0;
   }
   
   //___Bluetooth communication on ____________________________________
@@ -290,7 +297,7 @@ void wakeUp() {
     Serial.print("UVI thresh: ");
     Serial.println(EEPROM.read(UVI_THRESH_ADDR));
     Serial.print("CO2 thresh: ");
-    Serial.println(EEPROM.read(CO2_THRESH_ADDR));
+    Serial.println(values.getCO2Thresh());
     Serial.print("VOC thresh: ");
     Serial.println(EEPROM.read(VOC_THRESH_ADDR));
     Serial.print("Temp thresh: ");
@@ -353,6 +360,7 @@ void checkButtonState() {
       if (digitalRead(BLUETOOTH_PIN) == !PRESSED_BUTTON_LEVEL) {
         checkBT = 0;
         if (values.warning) {
+          vib.off();
           dismissWarning();
         }
       }
@@ -446,7 +454,7 @@ void handleWarning() {
     warningVibTimeout = ms + 500;
     vib.toggle();
   }
-  if (warningCounter >= 12) {
+  if (warningCounter >= 10) {
     dismissWarning();
   }
 }
@@ -477,6 +485,7 @@ void dismissWarning() {
   Serial.println(s);
   warningCounter = 0;
   warningTimeout = millis() + 30000;
+  reactivateWarning = 1;
   ledRed.off();
   vib.off();
 }
