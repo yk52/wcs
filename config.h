@@ -57,7 +57,7 @@
 #define TEMP_FLASH_IDX_START	26000
 #define TEMP_FLASH_IDX_STOP		50999
 
-#define STORE_TO_FLASH_AFTER_MS	7200000	// 120 min
+#define STORE_TO_FLASH_AFTER_MS		10000// 7200000	// 120 min
 
 // _____________________
 
@@ -72,7 +72,7 @@
 // Version 10 //Pins as in WCS_Version5
 #define	VIBRATION_PIN		2
 #define LEDBLUE_PIN			23 // Bluetooth
-#define	LEDGREEN_PIN		39 // Power
+#define	LEDGREEN_PIN		16 // Power
 #define LEDRED_PIN			15 // Warning
 // Button pins
 #define POWER_PIN			36

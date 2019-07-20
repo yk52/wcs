@@ -30,7 +30,7 @@ Adafruit_ADXL335 pedo;
 
 InterfaceOut vib(VIBRATION_PIN);
 InterfaceOut ledRed(LEDRED_PIN);
-InterfaceOut ledGreen(LEDRED_PIN);  // TODO CHange back to green later
+InterfaceOut ledGreen(LEDGREEN_PIN);
 InterfaceOut ledBlue(LEDBLUE_PIN);
 InterfaceOut sensors(SENSORS_EN_PIN); // auf high schalten nach wakeup
 
@@ -88,6 +88,7 @@ void setup() {
   // sensors.off(); // TODO ADD AGAIN LATER
   ble.init("Vitameter"); // TODO delete later
 
+  values.setFlashIndexToStart();
 }
 
 
@@ -112,35 +113,38 @@ void loop() {
   //___Bluetooth communication on ____________________________________
   if (bleOn) {
     if (ms > bleTimer) {
-      bleTimer = ms + 3000;
-      Serial.print("message sent:   ");
-      sent = ble.getMessage();
-      Serial.println(sent.c_str());
-      processed = values.processMessage(sent);
-  
-      Serial.print("message processed:   ");
-      Serial.println(processed.c_str());
-      
-      Serial.print("parameter:   ");
-      Serial.println(values.parameter.c_str());
-      
-      Serial.print("value is:   ");
-      Serial.println(values._value);
-      
-      ble.write(processed);
-  
-      Serial.println("");
-      Serial.println("");
-
+      if (values.dataWanted) {
+        Serial.println("Data wanted");
+        Serial.println("Data from flash");
+        Serial.println(values.prepareData().c_str());
+        Serial.println("Data from array");
+        Serial.println(values.prepareDataFromArrays().c_str());
+        
+        values.dataWanted = false;
+      } else {
+        bleTimer = ms + 3000;
+        sent = ble.getMessage();
+        //Serial.println(sent.c_str());
+        processed = values.processMessage(sent);
+        Serial.print("message processed:   ");
+        Serial.println(processed.c_str());
+        Serial.print("parameter:   ");
+        Serial.println(values.parameter.c_str());
+        Serial.print("value is:   ");
+        Serial.println(values._value);
+        ble.write(processed);
+        Serial.println("");
+        Serial.println("");
+      }
     }
   }
   //__________________________________________________________________
   if (state == LIGHT_SLEEP) {
-    /*
+    
     if (values.uvi_idx >= 1) {
-      values.storeRAMToFlash();
+      // values.storeRAMToFlash();
     }
-    */
+    
     values.resetSteps();
     goLightSleep();
   }
@@ -208,17 +212,16 @@ void loop() {
       Serial.print("UV: ");
       Serial.println(values.getLastUVI());
       Serial.println();
-      Serial.println();
-      /*
       Serial.print("Temp: ");
       Serial.println(values.getLastTemp());
       Serial.println();
-      */
+      Serial.println();
+      
       showTimeout += showFreq;
     }
     if ((ms - lastEmptied) > STORE_TO_FLASH_AFTER_MS) {
       lastEmptied = ms;
-      // values.storeRAMToFlash();
+      values.storeRAMToFlash();
     }
     
     //_____ Go sleep until next timeout ________________________________
@@ -436,14 +439,15 @@ void sensorsInit() {
       return;
     }
   }
-
+  
+  pedo.calibrate(); // TODO try it out here?
   if (firstBoot) {
     while (!ccs.available());
     float t = ccs.calculateTemperature();
     ccs.setTempOffset(t - 23.0);
-    firstBoot = 0;    
+    firstBoot = 0;
   }
-  pedo.calibrate();
+  
 }
 
 void handleWarning() {
