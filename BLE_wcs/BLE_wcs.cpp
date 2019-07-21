@@ -1,5 +1,5 @@
-#include "C:\Users\Joanna\Documents\MasterESE\3-Semester\WCS\wcs\BLE_wcs\BLE_wcs.h"
 
+#include <BLE_wcs.h>
 
 BLECharacteristic *pCharacteristic;
 bool deviceConnected = false;
@@ -60,7 +60,7 @@ void BLE_wcs::init(std::string deviceName)
 	// Create a BLE Characteristic
 	pCharacteristic = pService->createCharacteristic(
 						CHARACTERISTIC_UUID_TX,
-						BLECharacteristic::PROPERTY_NOTIFY
+						BLECharacteristic::PROPERTY_READ
 						);
 
 
