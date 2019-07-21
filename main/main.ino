@@ -22,6 +22,7 @@ std::string processed = "prodef";
 BLE_wcs ble;
 uint32_t bleTimer = 0;
 bool bleOn = 0;
+BluetoothSerial btSerial;
 
 Values values;
 Adafruit_CCS811 ccs;
@@ -115,10 +116,28 @@ void loop() {
     if (ms > bleTimer) {
       if (values.dataWanted) {
         Serial.println("Data wanted");
-        Serial.println("Data from flash");
-        Serial.println(values.prepareData().c_str());
-        Serial.println("Data from array");
-        Serial.println(values.prepareDataFromArrays().c_str());
+        
+        Serial.println("CO2");
+        Serial.println(values.prepareCO2Data().c_str());
+        Serial.println("");
+        Serial.println("VOC");
+        Serial.println(values.prepareVOCData().c_str());
+        Serial.println("");
+        Serial.println("Temp");
+        Serial.println(values.prepareTempData().c_str());
+        Serial.println("");
+        Serial.println("UVI");
+        Serial.println(values.prepareUVIData().c_str());
+        Serial.println("");
+        Serial.println("steps");
+        Serial.println("todo");
+
+        // Serial bluetooth
+        /*btSerial.begin("Vitameter serial");
+        btSerial.write(values.prepareCO2Data().c_str(), 100);
+        btSerial.write(values.prepareVOCData().c_str(), 100);
+        btSerial.write(values.prepareTempData().c_str(), 100);
+        btSerial.write(values.prepareUVIData().c_str(), 100);*/
         
         values.dataWanted = false;
       } else {

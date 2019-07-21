@@ -126,7 +126,11 @@ class Values {
 		// take the message sent from the phone and triggers respective functions, sets
 		// tresholds, gets values, etc.
 		// Format must be: "setCo2Threshold:4"
-		std::string prepareData();
+		std::string prepareAllData();
+		std::string prepareCO2Data();
+		std::string prepareVOCData();
+		std::string prepareTempData();
+		std::string prepareUVIData();
 		std::string processMessage(std::string);
 		std::string getParameterAsString(uint16_t);
 		std::string getUint8AsString(uint8_t);
