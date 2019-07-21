@@ -1,50 +1,38 @@
-
+#include "BluetoothSerial.h"
 #include <BLE_wcs.h>
 #include <Values.h>
 #include <stdio.h>
 #include <string>
 
+/*************************************************
+ * type via console:
+ * 0 for ble init
+ * 1 for ble deinit
+ * 2 for btserial init
+ * 3 for btserial deinit
+ */
 
-
-BLE_wcs ble;
 Values values;
+
+
+// ----------------- blue low energy -------------------
+BLE_wcs ble;
 std::string sent;
-std::string processed = "prodef";
+std::string processed = "default";
+bool blueLE_on = false;
+bool blueLE_init = false;
+bool blueLE_deinit = false;
+// ------------------------------------------------------
 
-bool blue = false;
-bool blueInit = false;
-bool blueDeinit = false;
+// ---------------- blue serial ------------------------
+BluetoothSerial serialBT;
+bool blueSerial_on = false;
+bool blueSerial_init = false;
+bool blueSerial_deinit = false;
+// ------------------------------------------------------
 
-
-void setup() {
-  Serial.begin(115200);
-
-}
-
-void loop() {
-  /* 
-   *  if a ble message from phone is received, process the message with values.processMessage
-   *  Depending on return: set thresholds, get thresholds, send data, ...
-   */
-  if (Serial.available()) {
-    Serial.println("serial.available");
-    byte a = Serial.read();
-    Serial.println(a);
-    if (a == '1') {
-      blue = true;
-      blueInit = true;
-    } else if (a == '0') {
-      blue = false;
-      blueDeinit = true;
-    }
-  }
-
-  if (blue) {
-    if (blueInit) {
-      Serial.println("init called");
-      blueInit = false;
-      ble.init("Vitameter joey2");
-    }
+// --------------- display message function ------------
+void displayBleMessage() {
     Serial.println("blue on");
     Serial.print("message sent:   ");
     sent = ble.getMessage();
@@ -59,15 +47,90 @@ void loop() {
     ble.write(processed);
     Serial.println("");
     Serial.println("");
-  } else {
-    if (blueDeinit) {
-      Serial.println("deinit called");
-      blueDeinit = false;
-      ble.deinit();
+}
+// ------------------------------------------------------
+
+
+/***********************************************************************+
+ *               SETUP
+ *************************************************************************/
+void setup() {
+  Serial.begin(115200);
+  serialBT.begin("Vitameter blue serial");
+}
+
+
+
+/***********************************************************************+
+ *               LOOP
+ *************************************************************************/
+
+void loop() {
+
+  /********************************************************************************
+   *                       console input logic                                    */
+     
+  if (Serial.available()) {
+    byte a = Serial.read();
+    if (a == '0') {
+      blueLE_on = true;
+      blueLE_init = true;
+    } else if (a == '1') {
+      blueLE_on = false;
+      blueLE_deinit = true;
+    } else if (a == '2') {
+      blueSerial_on = true;
+      blueSerial_init = true;
+    } else if (a == '3') {
+      blueSerial_on = false;
+      blueSerial_deinit = true;
     }
-    Serial.println("blue off");
+  }
+
+  /********************************************************************************
+   *                       blue low energy                                               */
+  if (blueLE_on) {
+    if (blueLE_init) {
+      Serial.println("ble init called");
+      blueLE_init = false;
+      ble.init("Vitameter ble");
+    }
+    displayBleMessage();
+  } else {
+    if (blueLE_deinit) {
+      Serial.println("blue low energy deinit called");
+      blueLE_deinit = false;
+      serialBT.end();                                 // does reboot and maybe this kills also ble?!
+    }
+    Serial.println("blue low energy off");
+    Serial.println("");
+  }
+
+  /*************************************************************************
+   *            blue serial
+   */
+  if (blueSerial_on) {
+    if (blueSerial_init) {
+      Serial.println("blue serial init called");
+      blueSerial_init = false;
+      serialBT.begin("Vitameter blue serial");
+    }
+    Serial.println("serial bluetooth on");
+    serialBT.println(values.prepareAllData().c_str());
+    serialBT.println(values.prepareCO2Data().c_str());
+    serialBT.println(values.prepareVOCData().c_str());
+    serialBT.println(values.prepareTempData().c_str());
+    serialBT.println(values.prepareUVIData().c_str());
+  } else {
+    if (blueSerial_deinit) {
+      Serial.println("blue serial deinit called");
+      blueSerial_deinit = false;
+      serialBT.end();
+    }
+    Serial.println("serial blue off");
     Serial.println("");
     Serial.println("");
-  } 
+  }
+   
   delay(2000);
 }

@@ -95,7 +95,7 @@ void BLE_wcs::stopAdvertising()
 
 void BLE_wcs::deinit()
 {
-	BLEDevice::deinit();
+	BLEDevice::deinit(true);
 }	
 
 void BLE_wcs::write(std::string txValue) {
