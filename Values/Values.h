@@ -59,13 +59,13 @@ class Values {
 		bool getCO2Flag(void);
 
 		// Ram Storage arrays
-		uint16_t co2[CO2_STORAGE_SIZE] = {0};  // in ppm. in flash memory, its divided by 100 to fit in a byte
+		uint16_t co2[CO2_STORAGE_SIZE] = {400};  // in ppm. in flash memory, its divided by 100 to fit in a byte
 		uint8_t co2_idx;
-		uint16_t voc[VOC_STORAGE_SIZE] = {0}; // in ppb, bzw. mg/m3
+		uint16_t voc[VOC_STORAGE_SIZE] = {50}; // in ppb, bzw. mg/m3
 		uint8_t voc_idx;
-		uint8_t uvi[UVI_STORAGE_SIZE] = {0};   // UV index
+		uint8_t uvi[UVI_STORAGE_SIZE] = {50};   // UV index
 		uint8_t uvi_idx;
-		float temp[TEMP_STORAGE_SIZE] = {0}; // in degrees
+		float temp[TEMP_STORAGE_SIZE] = {22}; // in degrees
 		uint8_t temp_idx;
 		uint16_t steps;
 
@@ -117,8 +117,16 @@ class Values {
 		// take the message sent from the phone and triggers respective functions, sets
 		// tresholds, gets values, etc. 
 		// Format must be: "setCo2Threshold:4"
+		std::string prepareAllData();
+		std::string prepareCO2Data();
+		std::string prepareVOCData();
+		std::string prepareTempData();
+		std::string prepareUVIData();
 		std::string processMessage(std::string);
 		std::string getParameterAsString(uint16_t);
+		std::string getUint8AsString(uint8_t);
+		std::string getUint16AsString(uint16_t);
+		std::string prepareDataFromArrays();
 		
 		// global var for debug
 	    std::string parameter;
