@@ -57,7 +57,7 @@
 #define TEMP_FLASH_IDX_START	26000
 #define TEMP_FLASH_IDX_STOP		50999
 
-#define STORE_TO_FLASH_AFTER_MS		10000// 7200000	// 120 min
+#define STORE_TO_FLASH_AFTER_MS		7200000	// 120 min
 
 // _____________________
 
@@ -99,9 +99,9 @@
 #define WARNING_STORAGE_SIZE 50
 
 // Pedometer
-#define X_PIN 				12
-#define Y_PIN 				14
-#define Z_PIN 				27
+// #define X_PIN 				32
+#define Y_PIN 				32
+#define Z_PIN 				33
 #define PEDO_CALIBRATION_SAMPLE_SIZE 15
 #define PEDO_SAMPLE_SIZE 		15
 #define ACCL				85000

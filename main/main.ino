@@ -76,6 +76,10 @@ void setup() {
   // Buttons init
   pinMode(POWER_PIN, INPUT);
   pinMode(BLUETOOTH_PIN, INPUT);
+
+  // ADC init
+  pinMode(Y_PIN, INPUT);
+  pinMode(Z_PIN, INPUT);
   
   // Thresholds for sensor values init
   values.init();
@@ -86,10 +90,6 @@ void setup() {
   delay(500);
   pedo.calibrate();
   values.pedoEnable = 1;
-  // sensors.off(); // TODO ADD AGAIN LATER
-  ble.init("Vitameter"); // TODO delete later
-
-  values.setFlashIndexToStart();
 }
 
 
@@ -160,8 +160,8 @@ void loop() {
   //__________________________________________________________________
   if (state == LIGHT_SLEEP) {
     
-    if (values.uvi_idx >= 1) {
-      // values.storeRAMToFlash();
+    if (values.uvi_idx >= UVI_STORAGE_SIZE) {
+      values.storeRAMToFlash();
     }
     
     values.resetSteps();
@@ -231,9 +231,6 @@ void loop() {
       Serial.print("UV: ");
       Serial.println(values.getLastUVI());
       Serial.println();
-      Serial.print("Temp: ");
-      Serial.println(values.getLastTemp());
-      Serial.println();
       Serial.println();
       
       showTimeout += showFreq;
@@ -287,10 +284,8 @@ void goLightSleep() {
   detachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN));
   delay(1000);
   bleOn = 0;
-  // ble.deinit();
   values.clearAllWarnings();
   vib.off();
-  // sensors.off();
   ledGreen.off();
   ledRed.off();
   ledBlue.off();
@@ -336,7 +331,6 @@ void wakeUp() {
     Serial.println("ONLY BLUETOOTH");
     ledBlue.on();
     bleOn = 1;
-    // ble.init("Vitameter Main");
     state = ONLY_BT;
     bleTimer = millis();
   }
@@ -361,7 +355,6 @@ void checkButtonState() {
       checkBT = 0;
       if (digitalRead(BLUETOOTH_PIN) == PRESSED_BUTTON_LEVEL) {
         if (bleOn) {
-            // ble.deinit();
             bleOn = 0;
             ledBlue.off();
             Serial.println("BT off");
@@ -371,8 +364,8 @@ void checkButtonState() {
             }
           }
         else {
-          // ble.init("Vitameter main");
           bleOn = 1;
+          ble.init("Vitameter");
           ledBlue.on();
           Serial.println("BT on");
         }
@@ -430,8 +423,9 @@ void bluetoothButtonISR() {
 void sensorsInit() {
   bool error = 0;
   sensors.on();
-  delay(3000); 
+  delay(500); 
 
+  pedo.calibrate(); // TODO try it out here?
   // UV
   if (!uv.begin()) {
     Serial.println("Failed to communicate with VEML6075 UV sensor! Please check your wiring.");
@@ -459,7 +453,6 @@ void sensorsInit() {
     }
   }
   
-  pedo.calibrate(); // TODO try it out here?
   if (firstBoot) {
     while (!ccs.available());
     float t = ccs.calculateTemperature();
