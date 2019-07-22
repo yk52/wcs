@@ -617,15 +617,6 @@ std::string Values::prepareAllData() {
 	 **************************************************************************/
 	data += "Steps: ";
 
-	/**************************************************************************
-	 *    						clean up
-	 **************************************************************************/
-	// set all indices back
-//	setCurrentCO2FlashIdx(CO2_FLASH_IDX_START);
-//	setCurrentVOCFlashIdx(VOC_FLASH_IDX_START);
-//	setCurrentTempFlashIdx(TEMP_FLASH_IDX_START);
-//	setCurrentUVIFlashIdx(UVI_FLASH_IDX_START);
-
 		/**************************************************************************
 	 *    						return
 	 **************************************************************************/
@@ -723,6 +714,13 @@ std::string Values::prepareUVIData() {
 		data += getUint8AsString(uvi[k]);
 		data += " ";
 	}
+	return data;
+}
+
+std::string Values::prepareStepData() {
+	std::string data = "";
+	data += "steps: ";
+	data += getUint16AsString(steps);
 	return data;
 }
 

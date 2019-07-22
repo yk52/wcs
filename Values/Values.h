@@ -131,6 +131,7 @@ class Values {
 		std::string prepareVOCData();
 		std::string prepareTempData();
 		std::string prepareUVIData();
+		std::string prepareStepData();
 		std::string processMessage(std::string);
 		std::string getParameterAsString(uint16_t);
 		std::string getUint8AsString(uint8_t);

@@ -104,11 +104,11 @@ void loop() {
   }
 
   if (reactivateWarning && ms > warningTimeout) {
-    Serial.println("CO2, TVOC, Temp Warnings reactivated");
+    Serial.println("CO2 Warnings reactivated");
     Serial.println();
     values.warnCO2 = 1;
-    values.warnVOC = 1;
-    values.warnTemp = 1;
+    // values.warnVOC = 1;
+    // values.warnTemp = 1;
     reactivateWarning = 0;
   }
   
@@ -130,7 +130,7 @@ void loop() {
         values.dataWanted_UVI = 0;
       } else if (values.dataWanted_steps) {
         Serial.println("Steps Data wanted");
-        //btSerial.println(values.prepareStepData().c_str());
+        btSerial.println(values.prepareStepData().c_str());
         values.dataWanted_steps = 0;
       } else {
         bleTimer = ms + 3000;
@@ -151,11 +151,11 @@ void loop() {
   //__________________________________________________________________
   if (state == LIGHT_SLEEP) {
     
-    if (values.uvi_idx >= UVI_STORAGE_SIZE) {
+    if (values.uvi_idx >= 10) {
       values.storeRAMToFlash();
     }
     
-    values.resetSteps();
+    // values.resetSteps();
     goLightSleep();
   }
   //__________________________________________________________________
@@ -350,6 +350,7 @@ void checkButtonState() {
         if (bluetoothOn) {
             bluetoothOn = 0;
             btSerial.end();
+            values.setFlashIndexToStart();
             ledBlue.off();
             Serial.println("BT off");
             if (state == ONLY_BT) {
