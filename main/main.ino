@@ -230,6 +230,8 @@ void loop() {
       Serial.println(values.getLastVOC());
       Serial.print("UV: ");
       Serial.println(values.getLastUVI());
+      Serial.print("Temp: ");
+      Serial.println(values.getLastTemp());
       Serial.println();
       Serial.println();
       

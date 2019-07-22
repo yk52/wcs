@@ -104,7 +104,7 @@
 #define Z_PIN 				33
 #define PEDO_CALIBRATION_SAMPLE_SIZE 15
 #define PEDO_SAMPLE_SIZE 		15
-#define ACCL				85000
+#define ACCL				70000
 #define WAIT_AFTER_STEP		400
 
 
