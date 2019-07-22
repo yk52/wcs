@@ -754,13 +754,13 @@ std::string Values::prepareStepData() {
 			return "setUviThresh";
 		} else if (parameter.compare("setUviDurationThresh") == 0) {
 			setUVIDurationThresh(value);
-			return "set UVI Duration";
+			return "setUviDurationThresh";
 		} else if (parameter.compare("setStepGoal") == 0) {
 			setStepGoal(value);
 			return "setStepGoal";
-		} else if (parameter.compare("setSunsreenFactor") == 0) {
+		} else if (parameter.compare("setSunscreenFactor") == 0) {
 			// Todo: setSunsreenFactor(value);
-			return "todo: setSunsreenFactor";
+			return "todo: setSunscreenFactor";
 		} else {
 			return "invalid setter";
 		}
