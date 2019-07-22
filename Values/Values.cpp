@@ -10,8 +10,10 @@
 uint16_t testThresh = 15;						// todo: delete after debug is over
 size_t cut = 1;
 std::string parameter = "default parameter";
-bool dataWanted = false;
-
+bool initBtSerial = 0;
+bool dataWanted_CO2 = 0;
+bool dataWanted_UVI = 0;
+bool dataWanted_steps = 0;
 
 // SRAM storage index
 uint16_t co2_idx = 0;
@@ -794,9 +796,18 @@ std::string Values::prepareUVIData() {
 	/*********************************************************************************
 	*									data request
 	 **********************************************************************************/
-	} else if (rxValue.find("Data request") != -1) {
-		dataWanted = true;
-		return "DataRequest";
+	} else if (rxValue.find("initBtSerial") != -1) {
+		initBtSerial = true;
+		return "initBtSerial";
+	} else if (rxValue.find("dataWanted_CO2") != -1) {
+		dataWanted_CO2 = 1;
+		return "dataWanted_CO2";
+	} else if (rxValue.find("dataWanted_UVI") != -1) {
+			dataWanted_UVI = 1;
+			return "dataWanted_UVI";
+	} else if (rxValue.find("dataWanted_steps") != -1) {
+			dataWanted_steps = 1;
+			return "dataWanted_steps";
 	} else {
 		return "no valid command";
 	}

@@ -21,7 +21,7 @@ std::string sent;
 std::string processed = "prodef";
 BLE_wcs ble;
 uint32_t bleTimer = 0;
-bool bleOn = 0;
+bool bluetoothOn = 0;
 BluetoothSerial btSerial;
 
 Values values;
@@ -90,6 +90,7 @@ void setup() {
   delay(500);
   pedo.calibrate();
   values.pedoEnable = 1;
+  ble.init("Vitameter BLE");
 }
 
 
@@ -111,39 +112,29 @@ void loop() {
     reactivateWarning = 0;
   }
   
-  //___Bluetooth communication on ____________________________________
-  if (bleOn) {
+  //___Bluetooth low energy  communication on (is always on) ____________________________________
+  if (bluetoothOn) {
     if (ms > bleTimer) {
-      if (values.dataWanted) {
-        Serial.println("Data wanted");
-        
-        Serial.println("CO2");
-        Serial.println(values.prepareCO2Data().c_str());
-        Serial.println("");
-        Serial.println("VOC");
-        Serial.println(values.prepareVOCData().c_str());
-        Serial.println("");
-        Serial.println("Temp");
-        Serial.println(values.prepareTempData().c_str());
-        Serial.println("");
-        Serial.println("UVI");
-        Serial.println(values.prepareUVIData().c_str());
-        Serial.println("");
-        Serial.println("steps");
-        Serial.println("todo");
-
-        // Serial bluetooth
-        /*btSerial.begin("Vitameter serial");
-        btSerial.write(values.prepareCO2Data().c_str(), 100);
-        btSerial.write(values.prepareVOCData().c_str(), 100);
-        btSerial.write(values.prepareTempData().c_str(), 100);
-        btSerial.write(values.prepareUVIData().c_str(), 100);*/
-        
-        values.dataWanted = false;
+      if (values.initBtSerial) {
+        Serial.println("initBtSerial");
+        btSerial.begin("Vitameter serial");
+        values.initBtSerial = 0;
+      }
+      if (values.dataWanted_CO2) {
+        Serial.println("CO2 Data wanted");
+        btSerial.println(values.prepareCO2Data().c_str());
+        values.dataWanted_CO2 = 0;
+      } else if (values.dataWanted_UVI) {
+        Serial.println("UVI Data wanted");
+        btSerial.println(values.prepareUVIData().c_str());
+        values.dataWanted_UVI = 0;
+      } else if (values.dataWanted_steps) {
+        Serial.println("Steps Data wanted");
+        //btSerial.println(values.prepareStepData().c_str());
+        values.dataWanted_steps = 0;
       } else {
         bleTimer = ms + 3000;
         sent = ble.getMessage();
-        //Serial.println(sent.c_str());
         processed = values.processMessage(sent);
         Serial.print("message processed:   ");
         Serial.println(processed.c_str());
@@ -244,7 +235,7 @@ void loop() {
     
     //_____ Go sleep until next timeout ________________________________
 
-    if (!(checkBT || checkPower) && !values.pedoEnable && !bleOn && !values.warning) {
+    if (!(checkBT || checkPower) && !values.pedoEnable && !bluetoothOn && !values.warning) {
       // 1 second Delay to give ESP32 enough time to finish its tasks. Serial communication seems to stop abruptly without finishing when going into sleep.
       // Sleep a second less instead.
       ms = millis();
@@ -285,7 +276,7 @@ void goLightSleep() {
   detachInterrupt(digitalPinToInterrupt(POWER_PIN));
   detachInterrupt(digitalPinToInterrupt(BLUETOOTH_PIN));
   delay(1000);
-  bleOn = 0;
+  bluetoothOn = 0;
   values.clearAllWarnings();
   vib.off();
   ledGreen.off();
@@ -332,7 +323,7 @@ void wakeUp() {
   else if (digitalRead(BLUETOOTH_PIN) == PRESSED_BUTTON_LEVEL) {
     Serial.println("ONLY BLUETOOTH");
     ledBlue.on();
-    bleOn = 1;
+    bluetoothOn = 1;
     state = ONLY_BT;
     bleTimer = millis();
   }
@@ -356,8 +347,9 @@ void checkButtonState() {
     if (ms > btButtonPressed + 1500) {
       checkBT = 0;
       if (digitalRead(BLUETOOTH_PIN) == PRESSED_BUTTON_LEVEL) {
-        if (bleOn) {
-            bleOn = 0;
+        if (bluetoothOn) {
+            bluetoothOn = 0;
+            btSerial.end();
             ledBlue.off();
             Serial.println("BT off");
             if (state == ONLY_BT) {
@@ -366,8 +358,7 @@ void checkButtonState() {
             }
           }
         else {
-          bleOn = 1;
-          ble.init("Vitameter");
+          bluetoothOn = 1;
           ledBlue.on();
           Serial.println("BT on");
         }

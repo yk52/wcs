@@ -136,7 +136,14 @@ class Values {
 		std::string getUint8AsString(uint8_t);
 		std::string getUint16AsString(uint16_t);
 		std::string prepareDataFromArrays();
-		bool dataWanted;
+
+		// data logic
+		bool initBtSerial;
+		bool dataWanted_CO2;
+		bool dataWanted_UVI;
+		bool dataWanted_steps;
+
+
 		// global var for debug
 	    std::string parameter;
 		std::string _stdStringValue;

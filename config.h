@@ -57,7 +57,7 @@
 #define TEMP_FLASH_IDX_START	26000
 #define TEMP_FLASH_IDX_STOP		50999
 
-#define STORE_TO_FLASH_AFTER_MS		7200000	// 120 min
+#define STORE_TO_FLASH_AFTER_MS		3600000	// 60 min
 
 // _____________________
 
@@ -88,8 +88,8 @@
 
 // Frequencies
 #define PEDO_FREQ			30
-#define AQ_FREQ				2000 // 600000	// 10 min
-#define UV_FREQ				2000	// 1 min
+#define AQ_FREQ				5000 // 600000	// 10 min
+#define UV_FREQ				5000	// 1 min
 
 // Hold info for 150 minutes
 #define CO2_STORAGE_SIZE	1000
