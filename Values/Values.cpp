@@ -11,6 +11,7 @@ uint16_t testThresh = 15;						// todo: delete after debug is over
 size_t cut = 1;
 std::string parameter = "default parameter";
 bool initBtSerial = 0;
+bool dataWanted_all = 0;
 bool dataWanted_CO2 = 0;
 bool dataWanted_UVI = 0;
 bool dataWanted_steps = 0;
@@ -525,7 +526,7 @@ std::string Values::prepareAllData() {
 	/**************************************************************************
 	 *    						CO2
 	 **************************************************************************/
-	data += "CO2: ";
+	data += "CO2 Flash: ";
 	uint16_t currentFlashIdx = getCurrentCO2FlashIdx();
 	if (currentFlashIdx != CO2_FLASH_IDX_START) {								// if CurrentCO2FlashIdx is not at the starting position, get old data from flash
 		int address = CO2_FLASH_IDX_START;
@@ -535,20 +536,21 @@ std::string Values::prepareAllData() {
 			uint16_t value16 = value;											// co2 was divided by 100 to fit in byte, now multiply by 100
 			value16 *= 100;
 			data += getUint8AsString(value16);
-			data += " ";
+			data += "\n";
 			address++;
 		}
 	}
 	int i;
+	data += "CO2: ";
 	for (i = 0; i < CO2_STORAGE_SIZE; i++) {							// get data current array 		length ???
 		data += getUint16AsString(co2[i]);
-		data += " ";
+		data += "\n";
 	}
 
 	/**************************************************************************
 	 *    						VOC
 	 **************************************************************************/
-	data += "VOC: ";
+	data += "VOC Flash: ";
 	currentFlashIdx = getCurrentVOCFlashIdx();
 	if (currentFlashIdx != VOC_FLASH_IDX_START) {								// if CurrentCO2FlashIdx is not at the starting position, get old data from flash
 		int address = VOC_FLASH_IDX_START;
@@ -556,7 +558,7 @@ std::string Values::prepareAllData() {
 		for (i = 0; i < currentFlashIdx - VOC_FLASH_IDX_START; i++) {			// get data from flash
 			uint8_t value = EEPROM.read(address);
 			data += getUint8AsString(value);
-			data += " ";
+			data += "\n";
 			address++;
 		}
 	}
@@ -564,13 +566,13 @@ std::string Values::prepareAllData() {
 	data += "VOC: ";
 	for (j = 0; j < VOC_STORAGE_SIZE; j++) {							// get data current array 		length ???
 		data += getUint16AsString(voc[j]);
-		data += " ";
+		data += "\n";
 	}
 
 	/**************************************************************************
 	 *    						TEMP
 	 **************************************************************************/
-	data += "Temp: ";
+	data += "Temp Flash: ";
 	currentFlashIdx = getCurrentTempFlashIdx();
 	if (currentFlashIdx != TEMP_FLASH_IDX_START) {								// if CurrentCO2FlashIdx is not at the starting position, get old data from flash
 		int address = TEMP_FLASH_IDX_START;
@@ -578,7 +580,7 @@ std::string Values::prepareAllData() {
 		for (i = 0; i < currentFlashIdx - TEMP_FLASH_IDX_START; i++) {			// get data from flash
 			uint8_t value = EEPROM.read(address);
 			data += getUint8AsString(value);
-			data += " ";
+			data += "\n";
 			address++;
 		}
 	}
@@ -586,7 +588,7 @@ std::string Values::prepareAllData() {
 	data += "TEMP: ";
 	for (l = 0; l < TEMP_STORAGE_SIZE; l++) {							// get data current array 		length ???
 		data += getUint8AsString(temp[l]);
-		data += " ";
+		data += "\n";
 	}
 
 	/**************************************************************************
@@ -600,7 +602,7 @@ std::string Values::prepareAllData() {
 		for (i = 0; i < currentFlashIdx - UVI_FLASH_IDX_START; i++) {			// get data from flash
 			uint8_t value = EEPROM.read(address);
 			data += getUint8AsString(value);
-			data += " ";
+			data += "\n";
 			address++;
 		}
 	}
@@ -608,7 +610,7 @@ std::string Values::prepareAllData() {
 	data += "UVI: ";
 	for (k = 0; k < UVI_STORAGE_SIZE; k++) {							// get data current array 		length ???
 		data += getUint8AsString(uvi[k]);
-		data += " ";
+		data += "\n";
 	}
 
 
@@ -616,6 +618,7 @@ std::string Values::prepareAllData() {
 	 *    						Step
 	 **************************************************************************/
 	data += "Steps: ";
+	data += getUint16AsString(steps);
 
 		/**************************************************************************
 	 *    						return
@@ -635,7 +638,7 @@ std::string Values::prepareCO2Data() {
 			uint16_t value16 = value;											// co2 was divided by 100 to fit in byte, now multiply by 100
 			value16 *= 100;
 			data += getUint16AsString(value16);
-			data += " ";
+			data += "\n";
 			address++;
 		}
 	}
@@ -643,7 +646,7 @@ std::string Values::prepareCO2Data() {
 	int i;
 	for (i = 0; i < CO2_STORAGE_SIZE; i++) {							// get data current array 		length ???
 		data += getUint16AsString(co2[i]);
-		data += " ";
+		data += "\n";
 	}
 	return data;
 }
@@ -658,7 +661,7 @@ std::string Values::prepareVOCData() {
 		for (i = 0; i < currentFlashIdx - VOC_FLASH_IDX_START; i++) {			// get data from flash
 			uint8_t value = EEPROM.read(address);
 			data += getUint8AsString(value);
-			data += " ";
+			data += "\n";
 			address++;
 		}
 	}
@@ -666,7 +669,7 @@ std::string Values::prepareVOCData() {
 	data += " array VOC: ";
 	for (j = 0; j < VOC_STORAGE_SIZE; j++) {							// get data current array 		length ???
 		data += getUint16AsString(voc[j]);
-		data += " ";
+		data += "\n";
 	}
 	return data;
 }
@@ -681,7 +684,7 @@ std::string Values::prepareTempData() {
 		for (i = 0; i < currentFlashIdx - TEMP_FLASH_IDX_START; i++) {			// get data from flash
 			uint8_t value = EEPROM.read(address);
 			data += getUint8AsString(value);
-			data += " ";
+			data += "\n";
 			address++;
 		}
 	}
@@ -689,7 +692,7 @@ std::string Values::prepareTempData() {
 	data += "array TEMP: ";
 	for (l = 0; l < TEMP_STORAGE_SIZE; l++) {							// get data current array 		length ???
 		data += getUint8AsString(temp[l]);
-		data += " ";
+		data += "\n";
 	}
 	return data;
 }
@@ -704,7 +707,7 @@ std::string Values::prepareUVIData() {
 		for (i = 0; i < currentFlashIdx - UVI_FLASH_IDX_START; i++) {			// get data from flash
 			uint8_t value = EEPROM.read(address);
 			data += getUint8AsString(value);
-			data += " ";
+			data += "\n";
 			address++;
 		}
 	}
@@ -712,7 +715,7 @@ std::string Values::prepareUVIData() {
 	data += "array UVI: ";
 	for (k = 0; k < UVI_STORAGE_SIZE; k++) {							// get data current array 		length ???
 		data += getUint8AsString(uvi[k]);
-		data += " ";
+		data += "\n";
 	}
 	return data;
 }
@@ -797,6 +800,9 @@ std::string Values::prepareStepData() {
 	} else if (rxValue.find("initBtSerial") != -1) {
 		initBtSerial = true;
 		return "initBtSerial";
+	} else if (rxValue.find("dataWanted_all") != -1) {
+		dataWanted_all = 1;
+		return "dataWanted_all";
 	} else if (rxValue.find("dataWanted_CO2") != -1) {
 		dataWanted_CO2 = 1;
 		return "dataWanted_CO2";

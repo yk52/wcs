@@ -140,6 +140,7 @@ class Values {
 
 		// data logic
 		bool initBtSerial;
+		bool dataWanted_all;
 		bool dataWanted_CO2;
 		bool dataWanted_UVI;
 		bool dataWanted_steps;

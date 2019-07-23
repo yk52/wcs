@@ -53,7 +53,7 @@ uint32_t warningVibTimeout = 0;
 bool goalVib = 0;
 uint8_t vibCounter = 0;
 uint32_t vibTimeout = 0;
-uint32_t showFreq = 2000;
+uint32_t showFreq = UV_FREQ;
 uint32_t sleepTime = 0;
 uint32_t lastEmptied = 0;
 uint32_t pedoTimeout = 0;
@@ -120,6 +120,11 @@ void loop() {
         btSerial.begin("Vitameter serial");
         values.initBtSerial = 0;
       }
+      if (values.dataWanted_all) {
+        Serial.println("all data wanted");
+        btSerial.println(values.prepareAllData().c_str());
+        values.dataWanted_all = 0;
+      }
       if (values.dataWanted_CO2) {
         Serial.println("CO2 Data wanted");
         btSerial.println(values.prepareCO2Data().c_str());
@@ -154,8 +159,6 @@ void loop() {
     if (values.uvi_idx >= 10) {
       values.storeRAMToFlash();
     }
-    
-    // values.resetSteps();
     goLightSleep();
   }
   //__________________________________________________________________
@@ -228,7 +231,7 @@ void loop() {
       
       showTimeout += showFreq;
     }
-    if ((ms - lastEmptied) > STORE_TO_FLASH_AFTER_MS) {
+    if ((ms - lastEmptied) > UVI_STORAGE_SIZE * UV_FREQ) {
       lastEmptied = ms;
       values.storeRAMToFlash();
     }
@@ -350,6 +353,7 @@ void checkButtonState() {
         if (bluetoothOn) {
             bluetoothOn = 0;
             btSerial.end();
+            values.resetSteps();
             values.setFlashIndexToStart();
             ledBlue.off();
             Serial.println("BT off");
