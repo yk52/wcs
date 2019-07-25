@@ -89,8 +89,8 @@ void setup() {
   sensors.on();
   delay(500);
   pedo.calibrate();
-  values.pedoEnable = 1;
-  ble.init("Vitameter BLE");
+  values.pedoEnable = 0;
+  ble.init("Vitameter low energy");
 }
 
 
@@ -123,7 +123,7 @@ void loop() {
       if (values.dataWanted_all) {
         Serial.println("all data wanted");
         btSerial.println(values.prepareAllData().c_str());
-        values.dataWanted_all = 0;
+        //values.dataWanted_all = 0;  TODO
       }
       if (values.dataWanted_CO2) {
         Serial.println("CO2 Data wanted");
@@ -140,6 +140,8 @@ void loop() {
       } else {
         bleTimer = ms + 3000;
         sent = ble.getMessage();
+        Serial.print("sent");
+        Serial.println(sent.c_str());
         processed = values.processMessage(sent);
         Serial.print("message processed:   ");
         Serial.println(processed.c_str());
@@ -150,6 +152,7 @@ void loop() {
         ble.write(processed);
         Serial.println("");
         Serial.println("");
+        delay(2000);
       }
     }
   }
