@@ -21,8 +21,6 @@ class Adafruit_ADXL335
 		Adafruit_ADXL335() {};
 		~Adafruit_ADXL335() {};
 
-		float xavg;
-		float yavg;
 		float zavg;
 
 		int steps,flag = 0;

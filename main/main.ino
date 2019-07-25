@@ -14,21 +14,26 @@
 #include <Values.h>
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
+// For debugging reasons. Keep defines to see currently measured values shown over according channel.
 // #define SHOW_BT_SERIAL
 #define SHOW_SERIAL
-// #define SHOW_BLE
+#define SHOW_BLE
 
 uint8_t state = LIGHT_SLEEP;
 
-// Bluetooth
+// Bluetooth related
+BluetoothSerial btSerial;
+BLE_wcs ble;
 std::string sent;
 std::string oldSent;
 std::string processed = "prodef";
 std::string msg = "";
-BLE_wcs ble;
 uint32_t bleTimer = 0;
+uint32_t bleShow = 0;
+uint32_t bleTimerFreq = 3000;
+uint32_t bleShowFreq = 3000;
 bool bluetoothOn = 0;
-BluetoothSerial btSerial;
+
 
 Values values;
 Adafruit_CCS811 ccs;
@@ -39,10 +44,12 @@ InterfaceOut vib(VIBRATION_PIN);
 InterfaceOut ledRed(LEDRED_PIN);
 InterfaceOut ledGreen(LEDGREEN_PIN);
 InterfaceOut ledBlue(LEDBLUE_PIN);
-InterfaceOut sensors(SENSORS_EN_PIN); // auf high schalten nach wakeup
+InterfaceOut sensors(SENSORS_EN_PIN);
 
 bool firstBoot = 1;
 bool reactivateWarning = 0;
+
+// Button related
 volatile bool checkBT = 0;
 volatile bool checkPower = 0;
 volatile uint32_t powerDebounceTimer = 0;
@@ -51,7 +58,7 @@ volatile uint32_t btButtonPressed = 0;
 volatile uint32_t powerButtonPressed = 0;
 
 
-// Timers
+// other timers
 uint32_t ms = 0;
 uint32_t warningTimeout = 0;
 uint8_t warningCounter = 0;
@@ -84,7 +91,6 @@ void setup() {
   pinMode(BLUETOOTH_PIN, INPUT);
 
   // ADC init
-  pinMode(Y_PIN, INPUT);
   pinMode(Z_PIN, INPUT);
   
   // Thresholds for sensor values init
@@ -113,8 +119,8 @@ void loop() {
     Serial.println("CO2 Warnings reactivated");
     Serial.println();
     values.warnCO2 = 1;
-    // values.warnVOC = 1;
-    // values.warnTemp = 1;
+    values.warnVOC = 1;
+    values.warnTemp = 1;
     reactivateWarning = 0;
   }
   
@@ -122,7 +128,7 @@ void loop() {
   //__________________________________________________________________
   if (state == LIGHT_SLEEP) {
     
-    if (values.uvi_idx >= 10) {
+    if (values.uvi_idx >= 1) {
       values.storeRAMToFlash();
     }
     goLightSleep();
@@ -199,16 +205,14 @@ void loop() {
     }
 #endif
 
-    if ((ms - lastEmptied) > UVI_STORAGE_SIZE * UV_FREQ) {
-      lastEmptied = ms;
+    // Store RAM into flash if array is full.
+    if (values.uvi_idx == UVI_STORAGE_SIZE) {
       values.storeRAMToFlash();
     }
     
     //_____ Go sleep until next timeout ________________________________
 
     if (!(checkBT || checkPower) && !values.pedoEnable && !bluetoothOn && !values.warning) {
-      // 1 second Delay to give ESP32 enough time to finish its tasks. Serial communication seems to stop abruptly without finishing when going into sleep.
-      // Sleep a second less instead.
       ms = millis();
       if (uvTimeout > ms) {
         uint32_t timeLeft = uvTimeout - ms;
@@ -235,7 +239,7 @@ void loop() {
  //___Bluetooth low energy  communication on (is always on) ____________________________________
   if (bluetoothOn) {
     if (ms > bleTimer) {
-      bleTimer = ms + 3000;
+      bleTimer = ms + 500;
       if (values.initBtSerial) {
         Serial.println("initBtSerial");
         btSerial.begin("Vitameter serial");
@@ -274,9 +278,12 @@ void loop() {
           Serial.println(values._value);
           Serial.println("");
           Serial.println("");
-          oldsSent = sent;
+          oldSent = sent;
         }
       }
+    }
+   if (ms > bleShow) {
+      bleShow = ms + 3000;
       
 #ifdef SHOW_BLE
       msg = "";
@@ -358,8 +365,10 @@ void setTimeouts() {
   pedoTimeout = PEDO_FREQ + ms;
   uvTimeout = UV_FREQ + ms;
   airTimeout = AQ_FREQ + ms;
+  
   showTimeout = ms + showFreq;
-  bleTimer = ms + 3000;
+  bleTimer = ms + bleTimerFreq;
+  bleShow = ms + bleShowFreq;
 }
 
 void wakeUp() {
@@ -484,8 +493,7 @@ void sensorsInit() {
   bool error = 0;
   sensors.on();
   delay(500); 
-
-  pedo.calibrate(); // TODO try it out here?
+  pedo.calibrate();
   // UV
   if (!uv.begin()) {
     Serial.println("Failed to communicate with VEML6075 UV sensor! Please check your wiring.");
@@ -560,7 +568,7 @@ void dismissWarning() {
   Serial.print("Warning dismissed: ");
   Serial.println(s);
   warningCounter = 0;
-  warningTimeout = millis() + 30000;
+  warningTimeout = millis() + 120000; // Reactivate after 2 minutes
   reactivateWarning = 1;
   ledRed.off();
   vib.off();

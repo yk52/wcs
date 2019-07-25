@@ -22,14 +22,10 @@ class InterfaceOut {
 		};
 		~InterfaceOut(void) {};
 
-		uint8_t pos;
-		uint8_t repetitions;
-		uint32_t schedule[10] = {0};
 
 		void on(void);
 		void off(void);
 		void toggle(void);
-		void rhythm(uint32_t duration, uint32_t pause, uint8_t repetitions);
 
 	private:
 		int pin;

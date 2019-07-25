@@ -8,7 +8,7 @@
 #define BAUDRATE			9600
 
 // FLASH_____________________
-#define FLASH_SIZE			3000000 // 3 MB
+#define FLASH_SIZE				3000000 // 3 MB
 #define VALUES_SET_ADDR			0
 #define CO2_THRESH_ADDR			1
 #define UVI_DUR_THRESH_ADDR		2
@@ -35,11 +35,11 @@
 #define CO2_FLASH_IDX_START			1000
 #define CO2_FLASH_IDX_STOP			5999
 #define VOC_FLASH_IDX_START			10000
-#define VOC_FLASH_IDX_STOP		14999
-#define UVI_FLASH_IDX_START		18000
-#define UVI_FLASH_IDX_STOP		22999
-#define TEMP_FLASH_IDX_START	26000
-#define TEMP_FLASH_IDX_STOP		50999
+#define VOC_FLASH_IDX_STOP			14999
+#define UVI_FLASH_IDX_START			18000
+#define UVI_FLASH_IDX_STOP			22999
+#define TEMP_FLASH_IDX_START		26000
+#define TEMP_FLASH_IDX_STOP			50999
 
 
 // _____________________
@@ -53,42 +53,39 @@
 
 
 // Version 10 //Pins as in WCS_Version5
-#define	VIBRATION_PIN		2
-#define LEDBLUE_PIN			23 // Bluetooth
-#define	LEDGREEN_PIN		16 // Power
-#define LEDRED_PIN			15 // Warning
+#define	VIBRATION_PIN			2
+#define LEDBLUE_PIN				23 // Bluetooth
+#define	LEDGREEN_PIN			16 // Power
+#define LEDRED_PIN				15 // Warning
 // Button pins
-#define POWER_PIN			36
-#define BLUETOOTH_PIN		34
+#define POWER_PIN				36
+#define BLUETOOTH_PIN			34
 #define PRESSED_BUTTON_LEVEL	0
 
-#define SENSORS_EN_PIN		13
-#define GAS_SENSOR_INT_PIN	4
+#define SENSORS_EN_PIN			13
 
-#define SDA_PIN				22
-#define SCL_PIN				21
+#define SDA_PIN					22
+#define SCL_PIN					21
 
 
 // Frequencies
-#define PEDO_FREQ			30
-#define AQ_FREQ				3000 // 600000	// 10 min
-#define UV_FREQ				3000	// 1 min
+#define PEDO_FREQ				30
+#define AQ_FREQ					600000	// 10 min
+#define UV_FREQ					60000	// 1 min
 
-// Hold info for 150 minutes
-#define CO2_STORAGE_SIZE	100
-#define VOC_STORAGE_SIZE	100
-#define TEMP_STORAGE_SIZE	100
-#define UVI_STORAGE_SIZE	100
-#define WARNING_STORAGE_SIZE 50
+
+#define CO2_STORAGE_SIZE		100
+#define VOC_STORAGE_SIZE		100
+#define TEMP_STORAGE_SIZE		100
+#define UVI_STORAGE_SIZE		100
+
 
 // Pedometer
-// #define X_PIN 				32
-#define Y_PIN 				33
-#define Z_PIN 				32
-#define PEDO_CALIBRATION_SAMPLE_SIZE 15
-#define PEDO_SAMPLE_SIZE 		15
-#define ACCL				50000
-#define WAIT_AFTER_STEP		300
+#define Z_PIN 							32
+#define PEDO_CALIBRATION_SAMPLE_SIZE 	15
+#define PEDO_SAMPLE_SIZE 				15
+#define ACCL							50000
+#define WAIT_AFTER_STEP					300
 
 
 
