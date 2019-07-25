@@ -14,11 +14,17 @@
 #include <Values.h>
 #include "C:\Users\Yumi\Desktop\wcs\config.h"
 
+// #define SHOW_BT_SERIAL
+#define SHOW_SERIAL
+// #define SHOW_BLE
+
 uint8_t state = LIGHT_SLEEP;
 
 // Bluetooth
 std::string sent;
+std::string oldSent;
 std::string processed = "prodef";
+std::string msg = "";
 BLE_wcs ble;
 uint32_t bleTimer = 0;
 bool bluetoothOn = 0;
@@ -89,7 +95,7 @@ void setup() {
   sensors.on();
   delay(500);
   pedo.calibrate();
-  values.pedoEnable = 0;
+  values.pedoEnable = 1;
   ble.init("Vitameter low energy");
 }
 
@@ -112,50 +118,7 @@ void loop() {
     reactivateWarning = 0;
   }
   
-  //___Bluetooth low energy  communication on (is always on) ____________________________________
-  if (bluetoothOn) {
-    if (ms > bleTimer) {
-      if (values.initBtSerial) {
-        Serial.println("initBtSerial");
-        btSerial.begin("Vitameter serial");
-        values.initBtSerial = 0;
-      }
-      if (values.dataWanted_all) {
-        Serial.println("all data wanted");
-        btSerial.println(values.prepareAllData().c_str());
-        //values.dataWanted_all = 0;  TODO
-      }
-      if (values.dataWanted_CO2) {
-        Serial.println("CO2 Data wanted");
-        btSerial.println(values.prepareCO2Data().c_str());
-        values.dataWanted_CO2 = 0;
-      } else if (values.dataWanted_UVI) {
-        Serial.println("UVI Data wanted");
-        btSerial.println(values.prepareUVIData().c_str());
-        values.dataWanted_UVI = 0;
-      } else if (values.dataWanted_steps) {
-        Serial.println("Steps Data wanted");
-        btSerial.println(values.prepareStepData().c_str());
-        values.dataWanted_steps = 0;
-      } else {
-        bleTimer = ms + 3000;
-        sent = ble.getMessage();
-        Serial.print("sent");
-        Serial.println(sent.c_str());
-        processed = values.processMessage(sent);
-        Serial.print("message processed:   ");
-        Serial.println(processed.c_str());
-        Serial.print("parameter:   ");
-        Serial.println(values.parameter.c_str());
-        Serial.print("value is:   ");
-        Serial.println(values._value);
-        ble.write(processed);
-        Serial.println("");
-        Serial.println("");
-        delay(2000);
-      }
-    }
-  }
+ 
   //__________________________________________________________________
   if (state == LIGHT_SLEEP) {
     
@@ -217,23 +180,25 @@ void loop() {
       values.storeTemp(ccs.calculateTemperature());
     }
 
+#ifdef SHOW_SERIAL
     if (ms > showTimeout) {
+      String msg;
+      msg = "Measurement number: ";
       Serial.print("Measurement number: ");
       Serial.println(values.co2_idx);
-
+  
       Serial.print("CO2: ");
       Serial.println(values.getLastCO2());
       Serial.print("TVOC: ");
       Serial.println(values.getLastVOC());
       Serial.print("UV: ");
       Serial.println(values.getLastUVI());
-      Serial.print("Temp: ");
-      Serial.println(values.getLastTemp());
       Serial.println();
       Serial.println();
-      
       showTimeout += showFreq;
     }
+#endif
+
     if ((ms - lastEmptied) > UVI_STORAGE_SIZE * UV_FREQ) {
       lastEmptied = ms;
       values.storeRAMToFlash();
@@ -267,6 +232,99 @@ void loop() {
       }
     }
   }
+ //___Bluetooth low energy  communication on (is always on) ____________________________________
+  if (bluetoothOn) {
+    if (ms > bleTimer) {
+      bleTimer = ms + 3000;
+      if (values.initBtSerial) {
+        Serial.println("initBtSerial");
+        btSerial.begin("Vitameter serial");
+        values.initBtSerial = 0;
+      }
+      if (values.dataWanted_all) {
+        Serial.println("all data wanted");
+        btSerial.println(values.prepareAllData().c_str());
+        //values.dataWanted_all = 0;  TODO
+      }
+      if (values.dataWanted_CO2) {
+        Serial.println("CO2 Data wanted");
+        btSerial.println(values.prepareCO2Data().c_str());
+        values.dataWanted_CO2 = 0;
+      } else if (values.dataWanted_UVI) {
+        Serial.println("UVI Data wanted");
+        btSerial.println(values.prepareUVIData().c_str());
+        values.dataWanted_UVI = 0;
+      } else if (values.dataWanted_steps) {
+        Serial.println("Steps Data wanted");
+        btSerial.println(values.prepareStepData().c_str());
+        values.dataWanted_steps = 0;
+      } else {
+        sent = ble.getMessage();
+        processed = values.processMessage(sent);
+        ble.write(processed);
+
+        if (sent != oldSent) {
+          Serial.print("sent");
+          Serial.println(sent.c_str());
+          Serial.print("message processed:   ");
+          Serial.println(processed.c_str());
+          Serial.print("parameter:   ");
+          Serial.println(values.parameter.c_str());
+          Serial.print("value is:   ");
+          Serial.println(values._value);
+          Serial.println("");
+          Serial.println("");
+          oldsSent = sent;
+        }
+      }
+      
+#ifdef SHOW_BLE
+      msg = "";
+      msg = "Measurement number: ";
+      msg += values.getUint8AsString(values.uvi_idx);
+      msg += "\n";
+      ble.write(msg);
+      msg = "CO2: ";
+      msg += values.getUint16AsString(values.getLastCO2());
+      msg += "\n";
+      ble.write(msg);
+      msg = "TVOC: ";
+      msg += values.getUint8AsString(values.getLastVOC());
+      msg += "\n";
+      ble.write(msg);
+      msg = "UVI: ";
+      msg += values.getUint8AsString(values.getLastUVI());
+      msg += "\n";
+      ble.write(msg);
+      msg = "Steps: ";
+      msg += values.getUint16AsString(values.getLastStep());
+      msg += "\n";
+      msg += "\n";
+      ble.write(msg);
+#endif
+
+#ifdef SHOW_BT_SERIAL
+      msg = "";
+      msg = "Measurement number: ";
+      msg += values.getUint8AsString(values.uvi_idx);
+      msg += "\n";
+      msg += "CO2: ";
+      msg += values.getUint16AsString(values.getLastCO2());
+      msg += "\n";
+      msg += "TVOC: ";
+      msg += values.getUint8AsString(values.getLastVOC());
+      msg += "\n";
+      msg += "UVI: ";
+      msg += values.getUint8AsString(values.getLastUVI());
+      msg += "\n";
+      msg += "Steps: ";
+      msg += values.getUint16AsString(values.getLastStep());
+      msg += "\n";
+      msg += "\n";
+      btSerial.println(msg.c_str());
+#endif
+    }
+  }  
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -301,6 +359,7 @@ void setTimeouts() {
   uvTimeout = UV_FREQ + ms;
   airTimeout = AQ_FREQ + ms;
   showTimeout = ms + showFreq;
+  bleTimer = ms + 3000;
 }
 
 void wakeUp() {

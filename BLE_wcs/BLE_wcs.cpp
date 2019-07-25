@@ -63,7 +63,8 @@ void BLE_wcs::init(std::string deviceName)
 	// Create a BLE Characteristic
 	pCharacteristic = pService->createCharacteristic(
 						CHARACTERISTIC_UUID_TX,
-						BLECharacteristic::PROPERTY_NOTIFY
+						BLECharacteristic::PROPERTY_NOTIFY |
+						BLECharacteristic::PROPERTY_READ
 						);
 
 
